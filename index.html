@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>MOOD</title>
+    <meta
+      name="description"
+      content="A-Frame scene where each box uses an emissive texture and the camera applies a bloom effect to create a glow." />
+    <!-- A-Frame library -->
+    <script src="https://unpkg.com/aframe@latest"></script>
+    <!-- Bloom postprocessing component -->
+    <script src="https://unpkg.com/aframe-bloom-component@1.1.0/dist/aframe-bloom-component.min.js"></script>
+    <script>
+      // Custom component: always-look-at
+      AFRAME.registerComponent("always-look-at", {
+        schema: { type: "selector" },
+        tick: function () {
+          var targetEl = this.data;
+          if (!targetEl) return;
+          var targetPos = new THREE.Vector3();
+          targetEl.object3D.getWorldPosition(targetPos);
+          // Make the entity’s -Z axis point at the target.
+          this.el.object3D.lookAt(targetPos);
+          // If your object appears inverted, you may need the following:
+          this.el.object3D.rotateY(Math.PI);
+        },
+      });
+      // Custom component: texture-light (from previous example)
+      AFRAME.registerComponent("texture-light", {
+        schema: {
+          texture: { type: "selector" }, // The image element to sample from.
+        },
+        init: function () {
+          var imgEl = this.data.texture;
+          if (!imgEl) {
+            console.warn("texture-light: No texture selector provided.");
+            return;
+          }
+          if (!imgEl.complete) {
+            imgEl.onload = () => {
+              this.sampleTexture(imgEl);
+            };
+          } else {
+            this.sampleTexture(imgEl);
+          }
+        },
+        sampleTexture: function (imgEl) {
+          var canvas = document.createElement("canvas");
+          canvas.width = imgEl.naturalWidth || imgEl.width;
+          canvas.height = imgEl.naturalHeight || imgEl.height;
+          var ctx = canvas.getContext("2d");
+          ctx.drawImage(imgEl, 0, 0);
+          try {
+            var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          } catch (e) {
+            console.error("texture-light: Unable to access image data. " + "This might be due to cross-origin restrictions.", e);
+            return;
+          }
+          var data = imageData.data;
+          var r = 0,
+            g = 0,
+            b = 0,
+            count = 0;
+          for (var i = 0; i < data.length; i += 4) {
+            var alpha = data[i + 3] / 255;
+            if (alpha > 0.1) {
+              r += data[i];
+              g += data[i + 1];
+              b += data[i + 2];
+              count++;
+            }
+          }
+          if (count === 0) {
+            count = 1;
+          }
+          r = Math.round(r / count);
+          g = Math.round(g / count);
+          b = Math.round(b / count);
+          var color = "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+          this.el.setAttribute("light", "color", color);
+          console.log("texture-light: Set light color to", color);
+        },
+      });
+      // Optional focal changer.
+      AFRAME.registerComponent("focal-changer", {
+        init: function () {
+          this.el.addEventListener("loaded", () => {
+            const camera = this.el.camera;
+            camera.setFocalLength(50);
+          });
+        },
+      });
+    </script>
+  </head>
+  <body>
+    <!-- tabindex="0" allows the scene to capture keyboard events -->
+    <a-scene tabindex="0" focal-changer>
+      <!-- Assets -->
+      <a-assets>
+        <!-- Replace with your GLB model -->
+        <a-asset-item id="modelGLB" src="../assets/entre.glb"></a-asset-item>
+        <!-- Texture images with transparency -->
+        <img id="tex_r" src="../assets/klp3_01.png" crossorigin="anonymous" />
+        <img id="tex_g" src="../assets/klp3_02.png" crossorigin="anonymous" />
+        <img id="tex_b" src="../assets/klp3_03.png" crossorigin="anonymous" />
+        <img id="tex_y" src="../assets/klp3_04.png" crossorigin="anonymous" />
+      </a-assets>
+
+      <!-- GLB Model -->
+      <a-entity gltf-model="#modelGLB" position="8 -2.7 -5" rotation="0 90 0" scale="0.001 0.001 0.001"></a-entity>
+
+      <!-- Group of four acrylic boxes, each with its own emissive material and auto-colored light -->
+      <a-entity id="boxes-group" position="1.7 1.6 -2.5">
+        <!-- Red Box & Acrylic Panel -->
+        <a-entity position="0 0 0">
+          <a-box
+            width="2"
+            height="2"
+            depth="0.01"
+            material="shader: standard; src: #tex_r; transparent: true; opacity: 1; alphaTest: 0.5; emissive: #ffffff; emissiveIntensity: 1.5"></a-box>
+          <a-box
+            width="2"
+            height="2"
+            depth="0.02"
+            position="0 0 -0.05"
+            material="color: #ff4444; transparent: true; opacity: 0.5; depthWrite: false; metalness: 0.1; roughness: 0.2"></a-box>
+          <a-light type="point" intensity="1" distance="3" position="0 0.5 0" texture-light="texture: #tex_r"></a-light>
+        </a-entity>
+
+        <!-- Green Box & Acrylic Panel -->
+        <a-entity position="0 0 -0.3">
+          <a-box
+            width="2"
+            height="2"
+            depth="0.01"
+            material="shader: standard; src: #tex_g; transparent: true; opacity: 1; alphaTest: 0.5; emissive: #ffffff; emissiveIntensity: 1.5"></a-box>
+          <a-box
+            width="2"
+            height="2"
+            depth="0.02"
+            position="0 0 -0.05"
+            material="color: #ff4444; transparent: true; opacity: 0.5; depthWrite: false;  metalness: 0.1; roughness: 0.2"></a-box>
+          <a-light type="point" intensity="1" distance="3" position="0 0.5 0" texture-light="texture: #tex_g"></a-light>
+        </a-entity>
+
+        <!-- Blue Box & Acrylic Panel -->
+        <a-entity position="0 0 -0.6">
+          <a-box
+            width="2"
+            height="2"
+            depth="0.01"
+            material="shader: standard; src: #tex_b; transparent: true; opacity: 1; alphaTest: 0.5; emissive: #ffffff; emissiveIntensity: 1.5"></a-box>
+          <a-box
+            width="2"
+            height="2"
+            depth="0.02"
+            position="0 0 -0.05"
+            material="color: #ff4444; transparent: true; opacity: 0.5; depthWrite: false;  metalness: 0.1; roughness: 0.2"></a-box>
+          <a-light type="point" intensity="1" distance="3" position="0 0.5 0" texture-light="texture: #tex_b"></a-light>
+        </a-entity>
+
+        <!-- Blue Box & Acrylic Panel -->
+        <a-entity position="0 0 -0.9">
+          <a-box
+            width="2"
+            height="2"
+            depth="0.01"
+            material="shader: standard; src: #tex_y; transparent: true; opacity: 1; alphaTest: 0.5; emissive: #ffffff; emissiveIntensity: 1.5"></a-box>
+          <a-box
+            width="2"
+            height="2"
+            depth="0.02"
+            position="0 0 -0.05"
+            material="color: #ff4444; transparent: true; opacity: 0.5; depthWrite: false;  metalness: 0.1; roughness: 0.2"></a-box>
+          <a-light type="point" intensity="1" distance="3" position="0 0.5 0" texture-light="texture: #tex_y"></a-light>
+        </a-entity>
+      </a-entity>
+
+      <!-- Free Camera Rig: Parent handles movement (WASD); child camera always looks at target and applies bloom -->
+      <a-entity id="freeCameraRig" wasd-controls="acceleration: 10" position="0 1.6 3">
+        <a-entity camera="active: true" always-look-at="#boxes-group" bloom="threshold: 0.1; strength: 1.5; radius: 0.5"></a-entity>
+      </a-entity>
+
+      <!-- Fixed camera that always looks at the boxes-group -->
+      <a-entity id="fixedCamera" camera="active: false" always-look-at="#boxes-group" position="0 2 -8"></a-entity>
+
+      <!-- Sky -->
+      <a-sky color="#ECECEC"></a-sky>
+    </a-scene>
+
+    <!-- Camera toggle script (Press "C" to switch cameras) -->
+    <script>
+      document.addEventListener("keydown", function (evt) {
+        if (evt.key.toLowerCase() === "c") {
+          var sceneEl = document.querySelector("a-scene");
+          var freeRigEl = document.querySelector("#freeCameraRig");
+          var fixedCamEl = document.querySelector("#fixedCamera");
+          var freeCamObj = freeRigEl.querySelector("[camera]").getObject3D("camera");
+          var fixedCamObj = fixedCamEl.getObject3D("camera");
+          if (sceneEl.camera === freeCamObj) {
+            sceneEl.camera = fixedCamObj;
+            freeRigEl.querySelector("[camera]").setAttribute("camera", "active", "false");
+            fixedCamEl.setAttribute("camera", "active", "true");
+            console.log("Switched to fixed camera");
+          } else {
+            sceneEl.camera = freeCamObj;
+            freeRigEl.querySelector("[camera]").setAttribute("camera", "active", "true");
+            fixedCamEl.setAttribute("camera", "active", "false");
+            console.log("Switched to free camera");
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
