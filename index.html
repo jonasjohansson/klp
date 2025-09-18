@@ -29,7 +29,6 @@
       defer></script>
   </head>
   <body>
-    <!-- tabindex="0" allows the scene to capture keyboard events -->
     <a-scene
       tabindex="0"
       focal-changer
@@ -37,21 +36,8 @@
       fog="type: linear; color: #2a2a2a; near: 15; far: 40"
       shadow="type: pcfsoft; renderOnTop: false"
       renderer="shadowMapEnabled: true; shadowMapType: pcfsoft"
-      bloom-effect="intensity: 5.8; threshold: 0.7; radius: 0.5">
-      <!-- Enhanced ambient lighting for better global illumination 
-      <a-light
-        type="ambient"
-        color="#505050"
-        intensity="0.4"></a-light>-->
-
-      <!-- Enhanced directional light for better shadows and illumination 
-      <a-light
-        type="directional"
-        color="#ffffff"
-        intensity="0.6"
-        position="5 10 5"
-        cast-shadow="true"></a-light>-->
-
+      bloom-effect="intensity: 5.8; threshold: 0.7; radius: 0.5"
+      loading-screen="enabled: false">
       <!-- Atmospheric lighting for better global illumination -->
       <a-light
         type="point"
@@ -89,12 +75,6 @@
           id="svg4"
           src="assets/4.svg"></a-asset-item>
       </a-assets>
-
-      <!-- HDRI Environment for realistic lighting and reflections
-      <a-sky
-        id="hdri-sky"
-        src="assets/pond_bridge_night_4k.exr"
-        radius="50"></a-sky> -->
 
       <!-- GLB Model with enhanced materials -->
       <a-entity
