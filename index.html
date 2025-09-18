@@ -14,16 +14,28 @@
       name="viewport"
       content="width=device-width, initial-scale=1" />
 
-    <!-- A-Frame + Bloom -->
-    <script src="assets/aframe-master.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.6.0/dist/aframe-extras.min.js"></script>
-    <!-- Three.js post-processing for bloom effects -->
-    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/postprocessing/EffectComposer.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/postprocessing/RenderPass.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/postprocessing/OutputPass.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/shaders/CopyShader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+    <!-- Import Maps for ES6 Modules (using local files) -->
+    <script type="importmap">
+      {
+        "imports": {
+          "aframe": "./assets/aframe-v1.7.1.module.min.js",
+          "three": "./assets/three.module.min.js",
+          "three/addons/": "./assets/jsm/"
+        }
+      }
+    </script>
+
+    <!-- Load A-Frame as ES6 module -->
+    <script type="module">
+      import AFRAME from "aframe";
+      // Make AFRAME available globally for A-Frame Extras
+      window.AFRAME = AFRAME;
+
+      // Load A-Frame Extras after A-Frame is available
+      const script = document.createElement("script");
+      script.src = "./assets/aframe-extras-master/dist/aframe-extras.min.js";
+      document.head.appendChild(script);
+    </script>
 
     <!-- External CSS & JS -->
     <link
@@ -31,6 +43,7 @@
       href="css/styles.css" />
     <script
       src="js/main.js"
+      type="module"
       defer></script>
   </head>
   <body>
@@ -38,9 +51,8 @@
       focal-changer
       background="color: #1a1a1a"
       fog="type: linear; color: #2a2a2a; near: 15; far: 40"
-      shadow="type: pcfsoft; renderOnTop: false"
-      renderer="shadowMapEnabled: true; shadowMapType: pcfsoft"
-      bloom-effect="intensity: 5.73; threshold: 0.5; radius: 0.5"
+      shadow="type: pcfsoft"
+      bloom-effect="intensity: 2.0; threshold: 0.3; radius: 0.8"
       loading-screen="enabled: false"
       xr-mode-ui="enabled: false">
       <!-- Atmospheric lighting for better global illumination  -->
