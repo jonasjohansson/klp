@@ -13,3 +13,15 @@
 a-scene {
   outline: none;
 }
+
+/* Hide A-Frame loading screen */
+.a-loader-title,
+.a-loader {
+  display: none !important;
+}
+
+/* Alternative: Hide the entire loading overlay */
+#aframeInspectorContainer .a-loader-title,
+#aframeInspectorContainer .a-loader {
+  display: none !important;
+}
