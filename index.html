@@ -18,9 +18,9 @@
     <script type="importmap">
       {
         "imports": {
-          "aframe": "./assets/aframe-v1.7.1.module.min.js",
-          "three": "./assets/three.module.min.js",
-          "three/addons/": "./assets/jsm/"
+          "aframe": "./assets/libraries/aframe/aframe-master.module.min.js",
+          "three": "./assets/libraries/three/three.module.min.js",
+          "three/addons/": "./assets/three-addons/"
         }
       }
     </script>
@@ -28,14 +28,12 @@
     <!-- Load A-Frame as ES6 module -->
     <script type="module">
       import AFRAME from "aframe";
-      // Make AFRAME available globally for A-Frame Extras
-      window.AFRAME = AFRAME;
-
-      // Load A-Frame Extras after A-Frame is available
-      const script = document.createElement("script");
-      script.src = "./assets/aframe-extras-master/dist/aframe-extras.min.js";
-      document.head.appendChild(script);
+      import * as THREE from "three";
     </script>
+
+    <script
+      src="./js/components/lighting/bloom.js"
+      type="module"></script>
 
     <!-- External CSS & JS -->
     <link
@@ -48,11 +46,12 @@
   </head>
   <body>
     <a-scene
-      focal-changer
-      background="color: #1a1a1a"
-      fog="type: linear; color: #2a2a2a; near: 15; far: 40"
+      background="color: #000000"
+      fog="type: linear; color: #000000; near: 25; far: 60"
       shadow="type: pcfsoft"
-      bloom-effect="intensity: 2.0; threshold: 0.3; radius: 0.8"
+      renderer="toneMapping: ACESFilmic;"
+      bloom="threshold: 0.5; strength: 0.3; radius: 1.2"
+      inspector="enabled: true"
       loading-screen="enabled: false"
       xr-mode-ui="enabled: false">
       <!-- Atmospheric lighting for better global illumination  -->
@@ -61,35 +60,35 @@
         type="point"
         color="#4488ff"
         position="-3 2 -3"
-        intensity="0.6"
-        distance="12"
-        decay="2"></a-light>
+        intensity="0.1"
+        distance="10"
+        decay="1"></a-light>
 
       <!-- Assets -->
       <a-assets>
         <a-asset-item
           id="modelGLB"
-          src="assets/klp.glb"></a-asset-item>
+          src="assets/models/klp.glb"></a-asset-item>
 
         <!-- SVG Assets for 3D lines -->
         <a-asset-item
           id="svg1"
-          src="assets/1.svg"></a-asset-item>
+          src="assets/graphics/1.svg"></a-asset-item>
         <a-asset-item
           id="svg2"
-          src="assets/2.svg"></a-asset-item>
+          src="assets/graphics/2.svg"></a-asset-item>
         <a-asset-item
           id="svg3"
-          src="assets/3.svg"></a-asset-item>
+          src="assets/graphics/3.svg"></a-asset-item>
         <a-asset-item
           id="svg4"
-          src="assets/4.svg"></a-asset-item>
+          src="assets/graphics/4.svg"></a-asset-item>
       </a-assets>
 
       <!-- GLB Model with enhanced materials -->
       <a-entity
         gltf-model="#modelGLB"
-        glb-material-enhancer="envMapIntensity: 1.5; forceTransparency: false; transparencyOpacity: 0.3; transparencyPattern: GLASS"
+        glb-material-enhancer="envMapIntensity: 1; forceTransparency: false; transparencyOpacity: 0.3; transparencyPattern: GLASS"
         position="8 -2.7 -5"
         rotation="0 90 0"
         scale="0.001 0.001 0.001"
@@ -122,7 +121,7 @@
             position="0 0 0"></a-entity>
           <a-entity
             id="sheet-light-1b"
-            rect-area-light="color: #ffffff; intensity: 1.5; width: 2; height: 2"
+            rect-area-light="color: #ffffff; intensity: 1; width: 2; height: 2"
             position="0 0 0"
             rotation="0 180 0"></a-entity>
           <!-- Acrylic slab plane -->
@@ -131,11 +130,11 @@
             position="0 0 0"></a-entity>
           <!-- White background SVG -->
           <a-entity
-            svg-file-loader="svgFile: #svg1; lineThickness: 0.02; color: #ffffff; emissive: #ffffff; emissiveIntensity: 1.2; useSvgColor: false"
+            svg-file-loader="svgFile: #svg1; lineThickness: 0.02; color: #ffffff; emissive: #ffffff; emissiveIntensity: 0.9; useSvgColor: false"
             position="0 0 0.005"></a-entity>
           <!-- Colored foreground SVG -->
           <a-entity
-            svg-file-loader="svgFile: #svg1; lineThickness: 0.025; useSvgColor: true; emissiveIntensity: 2.2"
+            svg-file-loader="svgFile: #svg1; lineThickness: 0.04; useSvgColor: true; emissiveIntensity: 0.8"
             position="0 0 0.008"></a-entity>
         </a-entity>
 
@@ -148,7 +147,7 @@
             position="0 0 0"></a-entity>
           <a-entity
             id="sheet-light-2b"
-            rect-area-light="color: #ffffff; intensity: 1.5; width: 2; height: 2"
+            rect-area-light="color: #ffffff; intensity: 1; width: 2; height: 2"
             position="0 0 0"
             rotation="0 180 0"></a-entity>
           <!-- Acrylic slab plane -->
@@ -157,11 +156,11 @@
             position="0 0 0"></a-entity>
           <!-- White background SVG -->
           <a-entity
-            svg-file-loader="svgFile: #svg2; lineThickness: 0.02; color: #ffffff; emissive: #ffffff; emissiveIntensity: 1.2; useSvgColor: false"
+            svg-file-loader="svgFile: #svg2; lineThickness: 0.02; color: #ffffff; emissive: #ffffff; emissiveIntensity: 0.9; useSvgColor: false"
             position="0 0 0.005"></a-entity>
           <!-- Colored foreground SVG -->
           <a-entity
-            svg-file-loader="svgFile: #svg2; lineThickness: 0.025; useSvgColor: true; emissiveIntensity: 2.2"
+            svg-file-loader="svgFile: #svg2; lineThickness: 0.04; useSvgColor: true; emissiveIntensity: 0.8"
             position="0 0 0.008"></a-entity>
         </a-entity>
 
@@ -174,7 +173,7 @@
             position="0 0 0"></a-entity>
           <a-entity
             id="sheet-light-3b"
-            rect-area-light="color: #ffffff; intensity: 1.5; width: 2; height: 2"
+            rect-area-light="color: #ffffff; intensity: 1; width: 2; height: 2"
             position="0 0 0"
             rotation="0 180 0"></a-entity>
           <!-- Acrylic slab plane -->
@@ -183,11 +182,11 @@
             position="0 0 0"></a-entity>
           <!-- White background SVG -->
           <a-entity
-            svg-file-loader="svgFile: #svg3; lineThickness: 0.02; color: #ffffff; emissive: #ffffff; emissiveIntensity: 1.2; useSvgColor: false"
+            svg-file-loader="svgFile: #svg3; lineThickness: 0.02; color: #ffffff; emissive: #ffffff; emissiveIntensity: 0.9; useSvgColor: false"
             position="0 0 0.005"></a-entity>
           <!-- Colored foreground SVG -->
           <a-entity
-            svg-file-loader="svgFile: #svg3; lineThickness: 0.025; useSvgColor: true; emissiveIntensity: 2.2"
+            svg-file-loader="svgFile: #svg3; lineThickness: 0.04; useSvgColor: true; emissiveIntensity: 0.8"
             position="0 0 0.008"></a-entity>
         </a-entity>
 
@@ -200,7 +199,7 @@
             position="0 0 0"></a-entity>
           <a-entity
             id="sheet-light-4b"
-            rect-area-light="color: #ffffff; intensity: 1.5; width: 2; height: 2"
+            rect-area-light="color: #ffffff; intensity: 1; width: 2; height: 2"
             position="0 0 0"
             rotation="0 180 0"></a-entity>
           <!-- Acrylic slab plane -->
@@ -209,23 +208,24 @@
             position="0 0 0"></a-entity>
           <!-- White background SVG -->
           <a-entity
-            svg-file-loader="svgFile: #svg4; lineThickness: 0.02; color: #ffffff; emissive: #ffffff; emissiveIntensity: 1.2; useSvgColor: false"
+            svg-file-loader="svgFile: #svg4; lineThickness: 0.02; color: #ffffff; emissive: #ffffff; emissiveIntensity: 0.9; useSvgColor: false"
             position="0 0 0.005"></a-entity>
           <!-- Colored foreground SVG -->
           <a-entity
-            svg-file-loader="svgFile: #svg4; lineThickness: 0.025; useSvgColor: true; emissiveIntensity: 2.2"
+            svg-file-loader="svgFile: #svg4; lineThickness: 0.04; useSvgColor: true; emissiveIntensity: 0.8"
             position="0 0 0.008"></a-entity>
         </a-entity>
       </a-entity>
 
-      <!-- Camera with A-Frame Extras controls -->
+      <!-- Camera with basic controls -->
       <a-entity
         id="cameraRig"
-        position="0.5 1.6 1.5"
-        movement-controls="controls: keyboard; speed: 0.05; fly: true">
+        position="0.5 1.6 1.5">
         <a-entity
           id="camera"
           camera="active: true"
+          look-controls="enabled: true; pointerLockEnabled: true"
+          wasd-controls="enabled: true; acceleration: 20; adEnabled: true; wsEnabled: true; fly: false; constrainToNavMesh: false"
           always-look-at="#svg-files-group"></a-entity>
       </a-entity>
     </a-scene>
