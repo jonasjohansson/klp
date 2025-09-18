@@ -30,14 +30,14 @@
   </head>
   <body>
     <a-scene
-      tabindex="0"
       focal-changer
       background="color: #1a1a1a"
       fog="type: linear; color: #2a2a2a; near: 15; far: 40"
       shadow="type: pcfsoft; renderOnTop: false"
       renderer="shadowMapEnabled: true; shadowMapType: pcfsoft"
       bloom-effect="intensity: 5.8; threshold: 0.7; radius: 0.5"
-      loading-screen="enabled: false">
+      loading-screen="enabled: false"
+      xr-mode-ui="enabled: false">
       <!-- Atmospheric lighting for better global illumination -->
       <a-light
         type="point"
@@ -220,7 +220,6 @@
         <a-entity
           id="camera"
           camera="active: true"
-          look-controls="pointerLockEnabled: true"
           always-look-at="#svg-files-group"></a-entity>
       </a-entity>
     </a-scene>
