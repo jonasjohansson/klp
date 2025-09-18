@@ -21,6 +21,9 @@ if (typeof AFRAME !== "undefined") {
 function loadComponents() {
   console.log("A-Frame ready, loading components...");
 
+  // Register bloom effect component first
+  registerBloomEffect();
+
   // Load all component modules
   Promise.all([
     loadScript("./js/components/utility-components.js"),
@@ -38,6 +41,109 @@ function loadComponents() {
     .catch((error) => {
       console.error("Error loading components:", error);
     });
+}
+
+function registerBloomEffect() {
+  console.log("Registering bloom effect component...");
+
+  AFRAME.registerComponent("bloom-effect", {
+    schema: {
+      intensity: { type: "number", default: 1.0 },
+      threshold: { type: "number", default: 0.5 },
+      radius: { type: "number", default: 0.5 },
+    },
+
+    init: function () {
+      console.log("Bloom effect component initialized with data:", this.data);
+      this.scene = this.el.sceneEl;
+      this.renderer = this.scene.renderer;
+      this.camera = this.scene.camera;
+
+      // Wait for scene to be ready
+      this.scene.addEventListener("loaded", this.setupBloom.bind(this));
+    },
+
+    setupBloom: function () {
+      console.log("Setting up bloom effect...");
+
+      // Check if Three.js post-processing is available
+      if (typeof THREE.EffectComposer === "undefined") {
+        console.warn("Three.js EffectComposer not available, trying fallback approach");
+        this.setupFallbackBloom();
+        return;
+      }
+
+      try {
+        // Create effect composer
+        this.composer = new THREE.EffectComposer(this.renderer);
+
+        // Create render pass
+        const renderScene = new THREE.RenderPass(this.scene.object3D, this.camera);
+        this.composer.addPass(renderScene);
+
+        // Create bloom pass with proper parameters
+        this.bloomPass = new THREE.UnrealBloomPass(
+          new THREE.Vector2(window.innerWidth, window.innerHeight),
+          this.data.intensity,
+          this.data.radius,
+          this.data.threshold
+        );
+        this.composer.addPass(this.bloomPass);
+
+        // Add output pass for proper tone mapping
+        if (typeof THREE.OutputPass !== "undefined") {
+          const outputPass = new THREE.OutputPass();
+          this.composer.addPass(outputPass);
+        }
+
+        // Override scene render
+        const originalRender = this.scene.render.bind(this.scene);
+        this.scene.render = () => {
+          this.composer.render();
+        };
+
+        // Set up tone mapping for better bloom
+        this.renderer.toneMapping = THREE.ReinhardToneMapping;
+        this.renderer.toneMappingExposure = 1.0;
+
+        console.log("Bloom effect enabled successfully!");
+      } catch (error) {
+        console.error("Failed to setup bloom effect:", error);
+        this.setupFallbackBloom();
+      }
+    },
+
+    setupFallbackBloom: function () {
+      console.log("Setting up fallback bloom effect...");
+
+      // Simple approach: enhance emissive materials
+      this.scene.object3D.traverse((child) => {
+        if (child.isMesh && child.material) {
+          if (child.material.emissive) {
+            child.material.emissiveIntensity = (child.material.emissiveIntensity || 1) * this.data.intensity;
+            child.material.needsUpdate = true;
+          }
+        }
+      });
+
+      // Set renderer tone mapping
+      this.renderer.toneMapping = THREE.ReinhardToneMapping;
+      this.renderer.toneMappingExposure = this.data.intensity;
+
+      console.log("Fallback bloom effect enabled!");
+    },
+
+    update: function () {
+      if (this.bloomPass) {
+        this.bloomPass.strength = this.data.intensity;
+        this.bloomPass.radius = this.data.radius;
+        this.bloomPass.threshold = this.data.threshold;
+      } else if (this.renderer) {
+        // Update fallback bloom
+        this.renderer.toneMappingExposure = this.data.intensity;
+      }
+    },
+  });
 }
 
 function loadScript(src) {

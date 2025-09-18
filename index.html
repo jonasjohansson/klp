@@ -17,8 +17,13 @@
     <!-- A-Frame + Bloom -->
     <script src="assets/aframe-master.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.6.0/dist/aframe-extras.min.js"></script>
-    <!-- Post-processing for bloom effects -->
-    <script src="https://cdn.jsdelivr.net/gh/supereggbert/aframe-htmlembed-component@master/dist/0.2.0/aframe-htmlembed-component.min.js"></script>
+    <!-- Three.js post-processing for bloom effects -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/postprocessing/OutputPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/shaders/CopyShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
 
     <!-- External CSS & JS -->
     <link
@@ -35,17 +40,10 @@
       fog="type: linear; color: #2a2a2a; near: 15; far: 40"
       shadow="type: pcfsoft; renderOnTop: false"
       renderer="shadowMapEnabled: true; shadowMapType: pcfsoft"
-      bloom-effect="intensity: 5.8; threshold: 0.7; radius: 0.5"
+      bloom-effect="intensity: 3.73; threshold: 0.5; radius: 0.5"
       loading-screen="enabled: false"
       xr-mode-ui="enabled: false">
-      <!-- Atmospheric lighting for better global illumination -->
-      <a-light
-        type="point"
-        color="#ffaa44"
-        position="3 2 3"
-        intensity="0.8"
-        distance="15"
-        decay="2"></a-light>
+      <!-- Atmospheric lighting for better global illumination  -->
 
       <a-light
         type="point"
@@ -121,12 +119,12 @@
             position="0 0 0"></a-entity>
           <!-- White background SVG -->
           <a-entity
-            svg-file-loader="svgFile: #svg1; lineThickness: 0.02; color: #ffffff; emissive: #ffffff; emissiveIntensity: 0.8; useSvgColor: false"
+            svg-file-loader="svgFile: #svg1; lineThickness: 0.02; color: #ffffff; emissive: #ffffff; emissiveIntensity: 1.2; useSvgColor: false"
             position="0 0 0.005"></a-entity>
           <!-- Colored foreground SVG -->
           <a-entity
-            svg-file-loader="svgFile: #svg1; lineThickness: 0.025; useSvgColor: true; emissiveIntensity: 0.6"
-            simple-glow="intensity: 1.8"
+            svg-file-loader="svgFile: #svg1; lineThickness: 0.025; useSvgColor: true; emissiveIntensity: 1.2"
+            simple-glow="intensity: 2.2"
             position="0 0 0.008"></a-entity>
         </a-entity>
 
@@ -148,12 +146,12 @@
             position="0 0 0"></a-entity>
           <!-- White background SVG -->
           <a-entity
-            svg-file-loader="svgFile: #svg2; lineThickness: 0.02; color: #ffffff; emissive: #ffffff; emissiveIntensity: 0.8; useSvgColor: false"
+            svg-file-loader="svgFile: #svg2; lineThickness: 0.02; color: #ffffff; emissive: #ffffff; emissiveIntensity: 1.2; useSvgColor: false"
             position="0 0 0.005"></a-entity>
           <!-- Colored foreground SVG -->
           <a-entity
-            svg-file-loader="svgFile: #svg2; lineThickness: 0.025; useSvgColor: true; emissiveIntensity: 0.6"
-            simple-glow="intensity: 1.8"
+            svg-file-loader="svgFile: #svg2; lineThickness: 0.025; useSvgColor: true; emissiveIntensity: 1.2"
+            simple-glow="intensity: 2.2"
             position="0 0 0.008"></a-entity>
         </a-entity>
 
@@ -175,12 +173,12 @@
             position="0 0 0"></a-entity>
           <!-- White background SVG -->
           <a-entity
-            svg-file-loader="svgFile: #svg3; lineThickness: 0.02; color: #ffffff; emissive: #ffffff; emissiveIntensity: 0.8; useSvgColor: false"
+            svg-file-loader="svgFile: #svg3; lineThickness: 0.02; color: #ffffff; emissive: #ffffff; emissiveIntensity: 1.2; useSvgColor: false"
             position="0 0 0.005"></a-entity>
           <!-- Colored foreground SVG -->
           <a-entity
-            svg-file-loader="svgFile: #svg3; lineThickness: 0.025; useSvgColor: true; emissiveIntensity: 0.6"
-            simple-glow="intensity: 1.8"
+            svg-file-loader="svgFile: #svg3; lineThickness: 0.025; useSvgColor: true; emissiveIntensity: 1.2"
+            simple-glow="intensity: 2.2"
             position="0 0 0.008"></a-entity>
         </a-entity>
 
@@ -202,12 +200,12 @@
             position="0 0 0"></a-entity>
           <!-- White background SVG -->
           <a-entity
-            svg-file-loader="svgFile: #svg4; lineThickness: 0.02; color: #ffffff; emissive: #ffffff; emissiveIntensity: 0.8; useSvgColor: false"
+            svg-file-loader="svgFile: #svg4; lineThickness: 0.02; color: #ffffff; emissive: #ffffff; emissiveIntensity: 1.2; useSvgColor: false"
             position="0 0 0.005"></a-entity>
           <!-- Colored foreground SVG -->
           <a-entity
-            svg-file-loader="svgFile: #svg4; lineThickness: 0.025; useSvgColor: true; emissiveIntensity: 0.6"
-            simple-glow="intensity: 1.8"
+            svg-file-loader="svgFile: #svg4; lineThickness: 0.025; useSvgColor: true; emissiveIntensity: 1.2"
+            simple-glow="intensity: 2.2"
             position="0 0 0.008"></a-entity>
         </a-entity>
       </a-entity>
