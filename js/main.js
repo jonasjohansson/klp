@@ -13,6 +13,7 @@ import { registerAcrylicPlane } from "./components/geometry/acrylic-plane.js";
 import { registerGlbMaterialEnhancer } from "./components/materials/glb-material-enhancer.js";
 import { registerSvgFileLoader } from "./components/geometry/svg-file-loader.js";
 import { registerBloomComponent } from "./components/lighting/bloom.js";
+import { registerSvgColorLighting } from "./components/lighting/svg-color-lighting.js";
 import "./components/utility/utility-components.js";
 
 // Load components after DOM is ready
@@ -27,6 +28,7 @@ function loadComponents() {
   registerAcrylicPlane();
   registerGlbMaterialEnhancer();
   registerSvgFileLoader();
+  registerSvgColorLighting();
 
   console.log("All components registered successfully!");
 }

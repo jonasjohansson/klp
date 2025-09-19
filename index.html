@@ -50,17 +50,19 @@
       fog="type: linear; color: #000000; near: 25; far: 60"
       shadow="type: pcfsoft"
       renderer="toneMapping: ACESFilmic;"
-      bloom="threshold: 0.5; strength: 0.3; radius: 1.2"
+      bloom="threshold: 0.5; strength: 0.4; radius: 1.2"
+      svg-color-lighting="svgFiles: #svg1, #svg2, #svg3, #svg4; atmosphericLightId: atmospheric-light"
       inspector="enabled: true"
       loading-screen="enabled: false"
       xr-mode-ui="enabled: false">
       <!-- Atmospheric lighting for better global illumination  -->
 
       <a-light
+        id="atmospheric-light"
         type="point"
         color="#4488ff"
         position="-3 2 -3"
-        intensity="0.1"
+        intensity="4"
         distance="10"
         decay="1"></a-light>
 
@@ -73,22 +75,22 @@
         <!-- SVG Assets for 3D lines -->
         <a-asset-item
           id="svg1"
-          src="assets/graphics/1.svg"></a-asset-item>
+          src="assets/graphics/11.svg"></a-asset-item>
         <a-asset-item
           id="svg2"
-          src="assets/graphics/2.svg"></a-asset-item>
+          src="assets/graphics/22.svg"></a-asset-item>
         <a-asset-item
           id="svg3"
-          src="assets/graphics/3.svg"></a-asset-item>
+          src="assets/graphics/33.svg"></a-asset-item>
         <a-asset-item
           id="svg4"
-          src="assets/graphics/4.svg"></a-asset-item>
+          src="assets/graphics/44.svg"></a-asset-item>
       </a-assets>
 
       <!-- GLB Model with enhanced materials -->
       <a-entity
         gltf-model="#modelGLB"
-        glb-material-enhancer="envMapIntensity: 1; forceTransparency: false; transparencyOpacity: 0.3; transparencyPattern: GLASS"
+        glb-material-enhancer="envMapIntensity: 4; forceTransparency: false; transparencyOpacity: 0.3; transparencyPattern: GLASS"
         position="8 -2.7 -5"
         rotation="0 90 0"
         scale="0.001 0.001 0.001"
@@ -117,11 +119,11 @@
           <!-- Sheet lights for this panel -->
           <a-entity
             id="sheet-light-1a"
-            rect-area-light="color: #ffffff; intensity: 0.5; width: 2; height: 2"
+            rect-area-light="intensity: 2.5; width: 2; height: 2"
             position="0 0 0"></a-entity>
           <a-entity
             id="sheet-light-1b"
-            rect-area-light="color: #ffffff; intensity: 1; width: 2; height: 2"
+            rect-area-light="intensity: 4; width: 2; height: 2"
             position="0 0 0"
             rotation="0 180 0"></a-entity>
           <!-- Acrylic slab plane -->
@@ -130,11 +132,11 @@
             position="0 0 0"></a-entity>
           <!-- White background SVG -->
           <a-entity
-            svg-file-loader="svgFile: #svg1; lineThickness: 0.02; color: #ffffff; emissive: #ffffff; emissiveIntensity: 0.9; useSvgColor: false"
+            svg-file-loader="svgFile: #svg1; lineThickness: 0.02; emissive: #ffffff; emissiveIntensity: 0.9; useSvgColor: false"
             position="0 0 0.005"></a-entity>
           <!-- Colored foreground SVG -->
           <a-entity
-            svg-file-loader="svgFile: #svg1; lineThickness: 0.04; useSvgColor: true; emissiveIntensity: 0.8"
+            svg-file-loader="svgFile: #svg1; lineThickness: 0.04; useSvgColor: true; emissiveIntensity: 1.2"
             position="0 0 0.008"></a-entity>
         </a-entity>
 
@@ -143,11 +145,11 @@
           <!-- Sheet lights for this panel -->
           <a-entity
             id="sheet-light-2a"
-            rect-area-light="color: #ffffff; intensity: 0.5; width: 2; height: 2"
+            rect-area-light="intensity: 2.5; width: 2; height: 2"
             position="0 0 0"></a-entity>
           <a-entity
             id="sheet-light-2b"
-            rect-area-light="color: #ffffff; intensity: 1; width: 2; height: 2"
+            rect-area-light="intensity: 4; width: 2; height: 2"
             position="0 0 0"
             rotation="0 180 0"></a-entity>
           <!-- Acrylic slab plane -->
@@ -156,11 +158,11 @@
             position="0 0 0"></a-entity>
           <!-- White background SVG -->
           <a-entity
-            svg-file-loader="svgFile: #svg2; lineThickness: 0.02; color: #ffffff; emissive: #ffffff; emissiveIntensity: 0.9; useSvgColor: false"
+            svg-file-loader="svgFile: #svg2; lineThickness: 0.02; emissive: #ffffff; emissiveIntensity: 0.9; useSvgColor: false"
             position="0 0 0.005"></a-entity>
           <!-- Colored foreground SVG -->
           <a-entity
-            svg-file-loader="svgFile: #svg2; lineThickness: 0.04; useSvgColor: true; emissiveIntensity: 0.8"
+            svg-file-loader="svgFile: #svg2; lineThickness: 0.04; useSvgColor: true; emissiveIntensity: 1.2"
             position="0 0 0.008"></a-entity>
         </a-entity>
 
@@ -169,11 +171,11 @@
           <!-- Sheet lights for this panel -->
           <a-entity
             id="sheet-light-3a"
-            rect-area-light="color: #ffffff; intensity: 0.5; width: 2; height: 2"
+            rect-area-light="intensity: 2.5; width: 2; height: 2"
             position="0 0 0"></a-entity>
           <a-entity
             id="sheet-light-3b"
-            rect-area-light="color: #ffffff; intensity: 1; width: 2; height: 2"
+            rect-area-light="intensity: 4; width: 2; height: 2"
             position="0 0 0"
             rotation="0 180 0"></a-entity>
           <!-- Acrylic slab plane -->
@@ -182,11 +184,11 @@
             position="0 0 0"></a-entity>
           <!-- White background SVG -->
           <a-entity
-            svg-file-loader="svgFile: #svg3; lineThickness: 0.02; color: #ffffff; emissive: #ffffff; emissiveIntensity: 0.9; useSvgColor: false"
+            svg-file-loader="svgFile: #svg3; lineThickness: 0.02; emissive: #ffffff; emissiveIntensity: 0.9; useSvgColor: false"
             position="0 0 0.005"></a-entity>
           <!-- Colored foreground SVG -->
           <a-entity
-            svg-file-loader="svgFile: #svg3; lineThickness: 0.04; useSvgColor: true; emissiveIntensity: 0.8"
+            svg-file-loader="svgFile: #svg3; lineThickness: 0.04; useSvgColor: true; emissiveIntensity: 1.2"
             position="0 0 0.008"></a-entity>
         </a-entity>
 
@@ -195,11 +197,11 @@
           <!-- Sheet lights for this panel -->
           <a-entity
             id="sheet-light-4a"
-            rect-area-light="color: #ffffff; intensity: 0.5; width: 2; height: 2"
+            rect-area-light="intensity: 2.5; width: 2; height: 2"
             position="0 0 0"></a-entity>
           <a-entity
             id="sheet-light-4b"
-            rect-area-light="color: #ffffff; intensity: 1; width: 2; height: 2"
+            rect-area-light="intensity: 4; width: 2; height: 2"
             position="0 0 0"
             rotation="0 180 0"></a-entity>
           <!-- Acrylic slab plane -->
@@ -208,11 +210,11 @@
             position="0 0 0"></a-entity>
           <!-- White background SVG -->
           <a-entity
-            svg-file-loader="svgFile: #svg4; lineThickness: 0.02; color: #ffffff; emissive: #ffffff; emissiveIntensity: 0.9; useSvgColor: false"
+            svg-file-loader="svgFile: #svg4; lineThickness: 0.02; emissive: #ffffff; emissiveIntensity: 0.9; useSvgColor: false"
             position="0 0 0.005"></a-entity>
           <!-- Colored foreground SVG -->
           <a-entity
-            svg-file-loader="svgFile: #svg4; lineThickness: 0.04; useSvgColor: true; emissiveIntensity: 0.8"
+            svg-file-loader="svgFile: #svg4; lineThickness: 0.04; useSvgColor: true; emissiveIntensity: 1.2"
             position="0 0 0.008"></a-entity>
         </a-entity>
       </a-entity>
