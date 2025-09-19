@@ -133,66 +133,49 @@ export function registerSvgColorLighting() {
       const primaryColor = colors[0];
       const secondaryColor = colors[1] || colors[0];
 
-      // Update sheet lights for this panel
+      // Update all 4 sheet lights for this panel
       const lightA = document.querySelector(`#sheet-light-${panelIndex + 1}a`);
       const lightB = document.querySelector(`#sheet-light-${panelIndex + 1}b`);
+      const lightC = document.querySelector(`#sheet-light-${panelIndex + 1}c`);
+      const lightD = document.querySelector(`#sheet-light-${panelIndex + 1}d`);
 
-      if (lightA) {
-        // Update the rect-area-light component data and force update
-        const rectAreaLight = lightA.components["rect-area-light"];
-        if (rectAreaLight) {
-          rectAreaLight.data.color = primaryColor;
-          rectAreaLight.update();
+      // Update lights A and B with primary color (front and back)
+      this.updateLight(lightA, primaryColor);
+      this.updateLight(lightB, primaryColor);
 
-          // Force the light to update by removing and re-adding it
-          const oldLight = lightA.getObject3D("light");
-          if (oldLight) {
-            lightA.removeObject3D("light");
-          }
+      // Update lights C and D with secondary color (front and back)
+      this.updateLight(lightC, secondaryColor);
+      this.updateLight(lightD, secondaryColor);
+    },
 
-          // Recreate the light with new color
-          const newLight = new THREE.RectAreaLight(
-            new THREE.Color(primaryColor),
-            rectAreaLight.data.intensity,
-            rectAreaLight.data.width,
-            rectAreaLight.data.height
-          );
-          const position = lightA.getAttribute("position");
-          if (position) {
-            newLight.position.set(position.x, position.y, position.z);
-          }
-          newLight.lookAt(0, 0, 0);
-          lightA.setObject3D("light", newLight);
+    updateLight: function (lightElement, color) {
+      if (!lightElement) return;
+
+      // Update the rect-area-light component data and force update
+      const rectAreaLight = lightElement.components["rect-area-light"];
+      if (rectAreaLight) {
+        rectAreaLight.data.color = color;
+        rectAreaLight.update();
+
+        // Force the light to update by removing and re-adding it
+        const oldLight = lightElement.getObject3D("light");
+        if (oldLight) {
+          lightElement.removeObject3D("light");
         }
-      }
 
-      if (lightB) {
-        // Update the rect-area-light component data and force update
-        const rectAreaLight = lightB.components["rect-area-light"];
-        if (rectAreaLight) {
-          rectAreaLight.data.color = secondaryColor;
-          rectAreaLight.update();
-
-          // Force the light to update by removing and re-adding it
-          const oldLight = lightB.getObject3D("light");
-          if (oldLight) {
-            lightB.removeObject3D("light");
-          }
-
-          // Recreate the light with new color
-          const newLight = new THREE.RectAreaLight(
-            new THREE.Color(secondaryColor),
-            rectAreaLight.data.intensity,
-            rectAreaLight.data.width,
-            rectAreaLight.data.height
-          );
-          const position = lightB.getAttribute("position");
-          if (position) {
-            newLight.position.set(position.x, position.y, position.z);
-          }
-          newLight.lookAt(0, 0, 0);
-          lightB.setObject3D("light", newLight);
+        // Recreate the light with new color
+        const newLight = new THREE.RectAreaLight(
+          new THREE.Color(color),
+          rectAreaLight.data.intensity,
+          rectAreaLight.data.width,
+          rectAreaLight.data.height
+        );
+        const position = lightElement.getAttribute("position");
+        if (position) {
+          newLight.position.set(position.x, position.y, position.z);
         }
+        newLight.lookAt(0, 0, 0);
+        lightElement.setObject3D("light", newLight);
       }
     },
   });
