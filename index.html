@@ -62,9 +62,9 @@
         type="point"
         color="#4488ff"
         position="-4 2 -3"
-        intensity="1"
-        distance="10"
-        decay="1"></a-light>
+        intensity="0.1"
+        distance="15"
+        decay="2"></a-light>
 
       <!-- HDRI Sky for realistic reflections -->
       <a-sky
@@ -81,16 +81,16 @@
         <!-- SVG Assets for 3D lines -->
         <a-asset-item
           id="svg1"
-          src="assets/graphics/klp.svg"></a-asset-item>
-        <a-asset-item
-          id="svg2"
           src="assets/graphics/klp_1.svg"></a-asset-item>
         <a-asset-item
-          id="svg3"
+          id="svg2"
           src="assets/graphics/klp_2.svg"></a-asset-item>
         <a-asset-item
-          id="svg4"
+          id="svg3"
           src="assets/graphics/klp_3.svg"></a-asset-item>
+        <a-asset-item
+          id="svg4"
+          src="assets/graphics/klp_4.svg"></a-asset-item>
       </a-assets>
 
       <!-- GLB Model with enhanced materials -->
@@ -122,25 +122,15 @@
         scale="0.3 0.3 0.3">
         <!-- Panel 1: SVG File 1 -->
         <a-entity position="0 0 0">
-          <!-- Sheet lights for this panel - Primary colors -->
+          <!-- Sheet lights for this panel - Front and back only -->
           <a-entity
             id="sheet-light-1a"
-            rect-area-light="intensity: 0.75; width: 2; height: 2"
-            position="0 0 0"></a-entity>
+            rect-area-light="intensity: 1; width: 2; height: 2"
+            position="0 0 0.1"></a-entity>
           <a-entity
             id="sheet-light-1b"
-            rect-area-light="intensity: 1.5; width: 2; height: 2"
-            position="0 0 0"
-            rotation="0 180 0"></a-entity>
-          <!-- Sheet lights for this panel - Secondary colors -->
-          <a-entity
-            id="sheet-light-1c"
-            rect-area-light="intensity: 0.75; width: 2; height: 2"
-            position="0 0 0"></a-entity>
-          <a-entity
-            id="sheet-light-1d"
-            rect-area-light="intensity: 1.5; width: 2; height: 2"
-            position="0 0 0"
+            rect-area-light="intensity: 1; width: 2; height: 2"
+            position="0 0 -0.1"
             rotation="0 180 0"></a-entity>
           <!-- Acrylic slab plane -->
           <a-entity
@@ -158,25 +148,15 @@
 
         <!-- Panel 2: SVG File 2 -->
         <a-entity position="0 0 -1">
-          <!-- Sheet lights for this panel - Primary colors -->
+          <!-- Sheet lights for this panel - Front and back only -->
           <a-entity
             id="sheet-light-2a"
-            rect-area-light="intensity: 0.75; width: 2; height: 2"
-            position="0 0 0"></a-entity>
+            rect-area-light="intensity: 1; width: 2; height: 2"
+            position="0 0 0.1"></a-entity>
           <a-entity
             id="sheet-light-2b"
-            rect-area-light="intensity: 1.5; width: 2; height: 2"
-            position="0 0 0"
-            rotation="0 180 0"></a-entity>
-          <!-- Sheet lights for this panel - Secondary colors -->
-          <a-entity
-            id="sheet-light-2c"
-            rect-area-light="intensity: 0.75; width: 2; height: 2"
-            position="0 0 0"></a-entity>
-          <a-entity
-            id="sheet-light-2d"
-            rect-area-light="intensity: 1.5; width: 2; height: 2"
-            position="0 0 0"
+            rect-area-light="intensity: 1; width: 2; height: 2"
+            position="0 0 -0.1"
             rotation="0 180 0"></a-entity>
           <!-- Acrylic slab plane -->
           <a-entity
@@ -194,25 +174,15 @@
 
         <!-- Panel 3: SVG File 3 -->
         <a-entity position="0 0 -2">
-          <!-- Sheet lights for this panel - Primary colors -->
+          <!-- Sheet lights for this panel - Front and back only -->
           <a-entity
             id="sheet-light-3a"
-            rect-area-light="intensity: 0.75; width: 2; height: 2"
-            position="0 0 0"></a-entity>
+            rect-area-light="intensity: 1; width: 2; height: 2"
+            position="0 0 0.1"></a-entity>
           <a-entity
             id="sheet-light-3b"
-            rect-area-light="intensity: 1.5; width: 2; height: 2"
-            position="0 0 0"
-            rotation="0 180 0"></a-entity>
-          <!-- Sheet lights for this panel - Secondary colors -->
-          <a-entity
-            id="sheet-light-3c"
-            rect-area-light="intensity: 0.75; width: 2; height: 2"
-            position="0 0 0"></a-entity>
-          <a-entity
-            id="sheet-light-3d"
-            rect-area-light="intensity: 1.5; width: 2; height: 2"
-            position="0 0 0"
+            rect-area-light="intensity: 1; width: 2; height: 2"
+            position="0 0 -0.1"
             rotation="0 180 0"></a-entity>
           <!-- Acrylic slab plane -->
           <a-entity
@@ -230,25 +200,15 @@
 
         <!-- Panel 4: SVG File 4 -->
         <a-entity position="0 0 -3">
-          <!-- Sheet lights for this panel - Primary colors -->
+          <!-- Sheet lights for this panel - Front and back only -->
           <a-entity
             id="sheet-light-4a"
-            rect-area-light="intensity: 0.75; width: 2; height: 2"
-            position="0 0 0"></a-entity>
+            rect-area-light="intensity: 1; width: 2; height: 2"
+            position="0 0 0.1"></a-entity>
           <a-entity
             id="sheet-light-4b"
-            rect-area-light="intensity: 1.5; width: 2; height: 2"
-            position="0 0 0"
-            rotation="0 180 0"></a-entity>
-          <!-- Sheet lights for this panel - Secondary colors -->
-          <a-entity
-            id="sheet-light-4c"
-            rect-area-light="intensity: 0.75; width: 2; height: 2"
-            position="0 0 0"></a-entity>
-          <a-entity
-            id="sheet-light-4d"
-            rect-area-light="intensity: 1.5; width: 2; height: 2"
-            position="0 0 0"
+            rect-area-light="intensity: 1; width: 2; height: 2"
+            position="0 0 -0.1"
             rotation="0 180 0"></a-entity>
           <!-- Acrylic slab plane -->
           <a-entity
@@ -266,6 +226,9 @@
       </a-entity>
 
       <!-- Camera with basic controls -->
+      <!-- SVG Swapper UI -->
+      <a-entity svg-swapper-ui="enabled: true"></a-entity>
+
       <a-entity
         id="cameraRig"
         position="0.5 1.6 1.5">

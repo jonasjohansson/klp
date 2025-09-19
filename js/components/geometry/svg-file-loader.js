@@ -665,11 +665,60 @@ export function registerSvgFileLoader() {
 
     update: function () {
       // Re-extract colors and regenerate geometry when SVG file changes
-      if (this.data.svgFile && this.data.useSvgColor) {
+      if (this.data.svgFile) {
         console.log("svg-file-loader: SVG file changed, re-extracting colors and geometry");
-        this.updateColors();
+        if (this.data.useSvgColor) {
+          this.updateColors();
+        }
         this.regenerateGeometry();
       }
+    },
+
+    // Public method to force reload of SVG
+    reloadSvg: function () {
+      console.log("svg-file-loader: Forcing SVG reload");
+      this.loadSVG();
+    },
+
+    // Public method to update colors manually
+    updateCustomColors: function (primaryColor, secondaryColor) {
+      console.log(`svg-file-loader: Updating custom colors - Primary: ${primaryColor}, Secondary: ${secondaryColor}`);
+
+      // Store the custom colors
+      this.customColors = {
+        primary: primaryColor,
+        secondary: secondaryColor,
+      };
+
+      // Update the LED group colors if it exists
+      const ledGroup = this.el.querySelector("#led-strips-group");
+      if (ledGroup) {
+        this.updateLedGroupColors(ledGroup, primaryColor, secondaryColor);
+      }
+    },
+
+    updateLedGroupColors: function (ledGroup, primaryColor, secondaryColor) {
+      const meshes = ledGroup.object3D.children;
+      const expandedPrimary = this.expandHexColor(primaryColor);
+      const expandedSecondary = this.expandHexColor(secondaryColor);
+      const colors = [expandedPrimary, expandedSecondary];
+
+      meshes.forEach((mesh, index) => {
+        if (mesh.isMesh && mesh.material) {
+          const colorIndex = index % colors.length;
+          mesh.material.color.setHex(colors[colorIndex].replace("#", "0x"));
+          mesh.material.emissive.setHex(colors[colorIndex].replace("#", "0x"));
+        }
+      });
+    },
+
+    expandHexColor: function (hexColor) {
+      // Convert short hex format (#f90) to full format (#ff9900)
+      if (hexColor && hexColor.startsWith("#") && hexColor.length === 4) {
+        const short = hexColor.slice(1);
+        return "#" + short[0] + short[0] + short[1] + short[1] + short[2] + short[2];
+      }
+      return hexColor;
     },
   });
 }

@@ -14,6 +14,7 @@ import { registerGlbMaterialEnhancer } from "./components/materials/glb-material
 import { registerSvgFileLoader } from "./components/geometry/svg-file-loader.js";
 import { registerBloomComponent } from "./components/lighting/bloom.js";
 import { registerSvgColorLighting } from "./components/lighting/svg-color-lighting.js";
+import { registerSvgSwapperUI } from "./components/utility/svg-swapper-ui.js";
 import "./components/utility/utility-components.js";
 
 // Load components after DOM is ready
@@ -29,6 +30,7 @@ function loadComponents() {
   registerGlbMaterialEnhancer();
   registerSvgFileLoader();
   registerSvgColorLighting();
+  registerSvgSwapperUI();
 
   console.log("All components registered successfully!");
 }

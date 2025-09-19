@@ -133,28 +133,45 @@ export function registerSvgColorLighting() {
       const primaryColor = colors[0];
       const secondaryColor = colors[1] || colors[0];
 
-      // Update all 4 sheet lights for this panel
+      // Update the 2 sheet lights for this panel (front and back)
       const lightA = document.querySelector(`#sheet-light-${panelIndex + 1}a`);
       const lightB = document.querySelector(`#sheet-light-${panelIndex + 1}b`);
-      const lightC = document.querySelector(`#sheet-light-${panelIndex + 1}c`);
-      const lightD = document.querySelector(`#sheet-light-${panelIndex + 1}d`);
 
-      // Update lights A and B with primary color (front and back)
+      // Update light A with primary color (front)
       this.updateLight(lightA, primaryColor);
-      this.updateLight(lightB, primaryColor);
 
-      // Update lights C and D with secondary color (front and back)
-      this.updateLight(lightC, secondaryColor);
-      this.updateLight(lightD, secondaryColor);
+      // Update light B with secondary color (back)
+      this.updateLight(lightB, secondaryColor);
+    },
+
+    // Public method to refresh colors for a specific SVG
+    refreshSvgColors: function (svgIndex) {
+      let svgSelectors = this.data.svgFiles;
+      if (typeof svgSelectors === "string") {
+        svgSelectors = svgSelectors.split(",").map((s) => s.trim());
+      }
+
+      if (svgIndex >= 0 && svgIndex < svgSelectors.length) {
+        const svgElement = document.querySelector(svgSelectors[svgIndex]);
+        if (svgElement) {
+          const src = svgElement.getAttribute("src");
+          if (src) {
+            this.fetchSvgAndExtractColors(src, svgIndex);
+          }
+        }
+      }
     },
 
     updateLight: function (lightElement, color) {
       if (!lightElement) return;
 
+      // Expand short hex colors to full format
+      const expandedColor = this.expandHexColor(color);
+
       // Update the rect-area-light component data and force update
       const rectAreaLight = lightElement.components["rect-area-light"];
       if (rectAreaLight) {
-        rectAreaLight.data.color = color;
+        rectAreaLight.data.color = expandedColor;
         rectAreaLight.update();
 
         // Force the light to update by removing and re-adding it
@@ -165,7 +182,7 @@ export function registerSvgColorLighting() {
 
         // Recreate the light with new color
         const newLight = new THREE.RectAreaLight(
-          new THREE.Color(color),
+          new THREE.Color(expandedColor),
           rectAreaLight.data.intensity,
           rectAreaLight.data.width,
           rectAreaLight.data.height
@@ -177,6 +194,15 @@ export function registerSvgColorLighting() {
         newLight.lookAt(0, 0, 0);
         lightElement.setObject3D("light", newLight);
       }
+    },
+
+    expandHexColor: function (hexColor) {
+      // Convert short hex format (#f90) to full format (#ff9900)
+      if (hexColor && hexColor.startsWith("#") && hexColor.length === 4) {
+        const short = hexColor.slice(1);
+        return "#" + short[0] + short[0] + short[1] + short[1] + short[2] + short[2];
+      }
+      return hexColor;
     },
   });
 }
