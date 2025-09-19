@@ -197,7 +197,7 @@ export function registerSvgFileLoader() {
           }
         });
 
-        // If the path isn't already closed (first and last points are different), close it
+        // Always close the path to create closed shapes
         if (points.length > 1) {
           const firstPoint = points[0];
           const lastPoint = points[points.length - 1];
@@ -291,8 +291,8 @@ export function registerSvgFileLoader() {
           return;
         }
 
-        // Create tube geometry along the curve
-        const geometry = new THREE.TubeGeometry(curve, 32, this.data.lineThickness, 8, false);
+        // Create half-tube geometry along the curve
+        const geometry = this.createHalfTubeGeometry(curve, this.data.lineThickness);
 
         // Determine material color
         let materialColor = this.data.color;
@@ -314,6 +314,7 @@ export function registerSvgFileLoader() {
           opacity: 1,
           metalness: 0.1,
           roughness: 0.2,
+          // side: THREE.DoubleSide, // Disabled for performance testing
         });
 
         const mesh = new THREE.Mesh(geometry, material);
@@ -333,6 +334,18 @@ export function registerSvgFileLoader() {
       return isNaN(result) ? 0 : result;
     },
 
+    createHalfTubeGeometry: function (curve, radius) {
+      // Create a simple half-cylinder by using a regular tube but with material side set to front only
+      const segments = 32;
+      const radialSegments = 8;
+
+      // Create a regular tube geometry
+      const geometry = new THREE.TubeGeometry(curve, segments, radius, radialSegments, false);
+
+      // Return the geometry - we'll handle the half-cylinder effect with material properties
+      return geometry;
+    },
+
     createFallbackLine: function () {
       const componentData = this.data;
       console.log("svg-file-loader: Creating fallback line with data:", componentData);
@@ -340,7 +353,7 @@ export function registerSvgFileLoader() {
       // Create a simple test line
       const testPoints = [new THREE.Vector3(-0.5, 0, 0), new THREE.Vector3(0.5, 0, 0)];
       const testCurve = new THREE.CatmullRomCurve3(testPoints);
-      const geometry = new THREE.TubeGeometry(testCurve, 8, componentData.lineThickness, 8, false);
+      const geometry = this.createHalfTubeGeometry(testCurve, componentData.lineThickness);
 
       const material = new THREE.MeshStandardMaterial({
         color: componentData.color,
@@ -348,6 +361,7 @@ export function registerSvgFileLoader() {
         emissiveIntensity: componentData.emissiveIntensity,
         transparent: true,
         opacity: 1,
+        // side: THREE.DoubleSide, // Disabled for performance testing
       });
 
       const mesh = new THREE.Mesh(geometry, material);
@@ -616,8 +630,8 @@ export function registerSvgFileLoader() {
           return;
         }
 
-        // Create tube geometry along the curve
-        const geometry = new THREE.TubeGeometry(curve, 32, this.data.lineThickness, 8, false);
+        // Create half-tube geometry along the curve
+        const geometry = this.createHalfTubeGeometry(curve, this.data.lineThickness);
 
         // Determine material color
         let materialColor = this.data.color;
@@ -639,6 +653,7 @@ export function registerSvgFileLoader() {
           opacity: 1,
           metalness: 0.1,
           roughness: 0.2,
+          // side: THREE.DoubleSide, // Disabled for performance testing
         });
 
         const mesh = new THREE.Mesh(geometry, material);

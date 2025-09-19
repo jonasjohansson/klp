@@ -66,6 +66,12 @@
         distance="10"
         decay="1"></a-light>
 
+      <!-- HDRI Sky for realistic reflections -->
+      <a-sky
+        id="hdri-sky"
+        src="assets/graphics/blaubeuren_night_4k.exr"
+        radius="50"></a-sky>
+
       <!-- Assets -->
       <a-assets>
         <a-asset-item
@@ -132,12 +138,12 @@
             position="0 0 0"></a-entity>
           <!-- White background SVG -->
           <a-entity
-            svg-file-loader="svgFile: #svg1; lineThickness: 0.02; emissive: #ffffff; emissiveIntensity: 0.9; useSvgColor: false"
+            svg-file-loader="svgFile: #svg1; lineThickness: 0.03; emissive: #ffffff; emissiveIntensity: 0.9; useSvgColor: false"
             position="0 0 0.005"></a-entity>
           <!-- Colored foreground SVG -->
           <a-entity
             svg-file-loader="svgFile: #svg1; lineThickness: 0.04; useSvgColor: true; emissiveIntensity: 1"
-            position="0 0 0.008"></a-entity>
+            position="0 0 0.035"></a-entity>
         </a-entity>
 
         <!-- Panel 2: SVG File 2 -->
@@ -158,12 +164,12 @@
             position="0 0 0"></a-entity>
           <!-- White background SVG -->
           <a-entity
-            svg-file-loader="svgFile: #svg2; lineThickness: 0.02; emissive: #ffffff; emissiveIntensity: 0.9; useSvgColor: false"
+            svg-file-loader="svgFile: #svg2; lineThickness: 0.03; emissive: #ffffff; emissiveIntensity: 0.9; useSvgColor: false"
             position="0 0 0.005"></a-entity>
           <!-- Colored foreground SVG -->
           <a-entity
             svg-file-loader="svgFile: #svg2; lineThickness: 0.04; useSvgColor: true; emissiveIntensity: 1"
-            position="0 0 0.008"></a-entity>
+            position="0 0 0.035"></a-entity>
         </a-entity>
 
         <!-- Panel 3: SVG File 3 -->
@@ -184,12 +190,12 @@
             position="0 0 0"></a-entity>
           <!-- White background SVG -->
           <a-entity
-            svg-file-loader="svgFile: #svg3; lineThickness: 0.02; emissive: #ffffff; emissiveIntensity: 0.9; useSvgColor: false"
+            svg-file-loader="svgFile: #svg3; lineThickness: 0.03; emissive: #ffffff; emissiveIntensity: 0.9; useSvgColor: false"
             position="0 0 0.005"></a-entity>
           <!-- Colored foreground SVG -->
           <a-entity
             svg-file-loader="svgFile: #svg3; lineThickness: 0.04; useSvgColor: true; emissiveIntensity: 1"
-            position="0 0 0.008"></a-entity>
+            position="0 0 0.035"></a-entity>
         </a-entity>
 
         <!-- Panel 4: SVG File 4 -->
@@ -210,12 +216,12 @@
             position="0 0 0"></a-entity>
           <!-- White background SVG -->
           <a-entity
-            svg-file-loader="svgFile: #svg4; lineThickness: 0.02; emissive: #ffffff; emissiveIntensity: 0.9; useSvgColor: false"
+            svg-file-loader="svgFile: #svg4; lineThickness: 0.03; emissive: #ffffff; emissiveIntensity: 0.9; useSvgColor: false"
             position="0 0 0.005"></a-entity>
           <!-- Colored foreground SVG -->
           <a-entity
             svg-file-loader="svgFile: #svg4; lineThickness: 0.04; useSvgColor: true; emissiveIntensity: 1"
-            position="0 0 0.008"></a-entity>
+            position="0 0 0.035"></a-entity>
         </a-entity>
       </a-entity>
 
