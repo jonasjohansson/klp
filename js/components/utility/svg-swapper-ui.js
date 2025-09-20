@@ -280,12 +280,35 @@ export function registerSvgSwapperUI() {
         // Force a complete reload by removing and recreating the component
         const svgFileLoaderComponent = loader.components["svg-file-loader"];
         if (svgFileLoaderComponent) {
+          // Store the original component data before removing
+          const originalData = { ...svgFileLoaderComponent.data };
+          console.log("svg-swapper: Preserving component data:", originalData);
+
           // Remove the component and re-add it to force a complete reload
           loader.removeAttribute("svg-file-loader");
 
-          // Wait a bit then re-add the component
+          // Wait a bit then re-add the component with all original attributes
           setTimeout(() => {
-            loader.setAttribute("svg-file-loader", "svgFile", `#svg${svgNumber}`);
+            // Recreate the component with all original attributes plus new svgFile
+            const newAttributes = {
+              svgFile: `#svg${svgNumber}`,
+              lineThickness: originalData.lineThickness,
+              color: originalData.color,
+              emissive: originalData.emissive,
+              emissiveIntensity: originalData.emissiveIntensity,
+              useSvgColor: originalData.useSvgColor,
+            };
+
+            console.log("svg-swapper: Recreating component with attributes:", newAttributes);
+            loader.setAttribute("svg-file-loader", newAttributes);
+
+            // After geometry is loaded, update colors if useSvgColor is enabled
+            setTimeout(() => {
+              const newComponent = loader.components["svg-file-loader"];
+              if (newComponent && newComponent.data.useSvgColor) {
+                newComponent.updateColors();
+              }
+            }, 500);
           }, 100);
         }
       });
@@ -400,6 +423,10 @@ export function registerSvgSwapperUI() {
     },
 
     updateSvgGeometryColors(panelNumber, primaryColor, secondaryColor) {
+      console.log(
+        `svg-swapper: Updating SVG geometry colors for Panel ${panelNumber}: Primary=${primaryColor}, Secondary=${secondaryColor}`
+      );
+
       // Find the panel entity
       const panelEntity = document.querySelector(`#svg-files-group > a-entity:nth-child(${panelNumber})`);
       if (!panelEntity) {
@@ -409,12 +436,16 @@ export function registerSvgSwapperUI() {
 
       // Find the SVG file loader entities in this panel
       const svgLoaders = panelEntity.querySelectorAll("a-entity[svg-file-loader]");
+      console.log(`svg-swapper: Found ${svgLoaders.length} SVG loaders in Panel ${panelNumber}`);
 
-      svgLoaders.forEach((loader) => {
+      svgLoaders.forEach((loader, index) => {
         const svgFileLoaderComponent = loader.components["svg-file-loader"];
         if (svgFileLoaderComponent) {
+          console.log(`svg-swapper: Updating SVG loader ${index + 1} colors`);
           // Update the colors in the SVG file loader
           svgFileLoaderComponent.updateCustomColors(primaryColor, secondaryColor);
+        } else {
+          console.warn(`svg-swapper: No svg-file-loader component found on loader ${index + 1}`);
         }
       });
     },

@@ -83,6 +83,8 @@ export function registerSvgFileLoader() {
         svgHeight = viewBoxValues[3] || 1000;
       }
 
+      console.log("svg-file-loader: SVG dimensions:", { svgWidth, svgHeight, viewBox });
+
       // Check for path elements first
       const pathElements = svgDoc.querySelectorAll("path");
 
@@ -90,8 +92,10 @@ export function registerSvgFileLoader() {
         const pathData = pathEl.getAttribute("d");
 
         if (pathData) {
+          console.log(`svg-file-loader: Parsing path ${index}:`, pathData.substring(0, 100) + "...");
           const curve = this.parseSVGPath(pathData, svgWidth, svgHeight);
           if (curve) {
+            console.log(`svg-file-loader: Successfully parsed path ${index} with ${curve.points.length} points`);
             // Extract color from SVG element if useSvgColor is enabled
             let svgColor = null;
             if (this.data.useSvgColor) {
@@ -100,7 +104,7 @@ export function registerSvgFileLoader() {
 
             paths.push({ curve, color: svgColor });
           } else {
-            console.warn("svg-file-loader: Failed to parse path", index);
+            console.warn("svg-file-loader: Failed to parse path", index, "Data:", pathData);
           }
         }
       });
@@ -152,6 +156,8 @@ export function registerSvgFileLoader() {
 
       let currentX = 0,
         currentY = 0;
+      let startX = 0,
+        startY = 0;
 
       if (commands) {
         commands.forEach((cmd, index) => {
@@ -164,17 +170,55 @@ export function registerSvgFileLoader() {
             .filter((n) => !isNaN(n));
 
           switch (type) {
-            case "M": // Move to
+            case "M": // Move to (absolute)
               currentX = coords[0] || 0;
               currentY = coords[1] || 0;
+              startX = currentX;
+              startY = currentY;
+              const movePoint = new THREE.Vector3(-(currentX - centerX) * 0.001, (currentY - centerY) * 0.001, 0);
+              points.push(movePoint);
               break;
-            case "L": // Line to
+            case "m": // Move to (relative)
+              currentX += coords[0] || 0;
+              currentY += coords[1] || 0;
+              startX = currentX;
+              startY = currentY;
+              const movePointRel = new THREE.Vector3(-(currentX - centerX) * 0.001, (currentY - centerY) * 0.001, 0);
+              points.push(movePointRel);
+              break;
+            case "L": // Line to (absolute)
               currentX = coords[0] || currentX;
               currentY = coords[1] || currentY;
-              const point = new THREE.Vector3(-(currentX - centerX) * 0.001, (currentY - centerY) * 0.001, 0);
-              points.push(point);
+              const linePoint = new THREE.Vector3(-(currentX - centerX) * 0.001, (currentY - centerY) * 0.001, 0);
+              points.push(linePoint);
               break;
-            case "C": // Cubic bezier
+            case "l": // Line to (relative)
+              currentX += coords[0] || 0;
+              currentY += coords[1] || 0;
+              const linePointRel = new THREE.Vector3(-(currentX - centerX) * 0.001, (currentY - centerY) * 0.001, 0);
+              points.push(linePointRel);
+              break;
+            case "H": // Horizontal line (absolute)
+              currentX = coords[0] || currentX;
+              const hPoint = new THREE.Vector3(-(currentX - centerX) * 0.001, (currentY - centerY) * 0.001, 0);
+              points.push(hPoint);
+              break;
+            case "h": // Horizontal line (relative)
+              currentX += coords[0] || 0;
+              const hPointRel = new THREE.Vector3(-(currentX - centerX) * 0.001, (currentY - centerY) * 0.001, 0);
+              points.push(hPointRel);
+              break;
+            case "V": // Vertical line (absolute)
+              currentY = coords[0] || currentY;
+              const vPoint = new THREE.Vector3(-(currentX - centerX) * 0.001, (currentY - centerY) * 0.001, 0);
+              points.push(vPoint);
+              break;
+            case "v": // Vertical line (relative)
+              currentY += coords[0] || 0;
+              const vPointRel = new THREE.Vector3(-(currentX - centerX) * 0.001, (currentY - centerY) * 0.001, 0);
+              points.push(vPointRel);
+              break;
+            case "C": // Cubic bezier (absolute)
               const startX = currentX;
               const startY = currentY;
               currentX = coords[4] || currentX;
@@ -194,18 +238,90 @@ export function registerSvgFileLoader() {
                 points.push(curvePoint);
               }
               break;
+            case "c": // Cubic bezier (relative)
+              const startXRel = currentX;
+              const startYRel = currentY;
+              currentX += coords[4] || 0;
+              currentY += coords[5] || 0;
+
+              // Create curve points for smooth bezier
+              for (let t = 0; t <= 1; t += 0.1) {
+                const x = this.cubicBezier(t, startXRel, startXRel + coords[0], startXRel + coords[2], startXRel + coords[4]);
+                const y = this.cubicBezier(t, startYRel, startYRel + coords[1], startYRel + coords[3], startYRel + coords[5]);
+
+                if (isNaN(x) || isNaN(y)) {
+                  console.warn("svg-file-loader: Invalid bezier coordinates:", { x, y, t, startXRel, startYRel, coords });
+                  continue;
+                }
+
+                const curvePoint = new THREE.Vector3(-(x - centerX) * 0.001, (y - centerY) * 0.001, 0);
+                points.push(curvePoint);
+              }
+              break;
+            case "S": // Smooth cubic bezier (absolute)
+              // For simplicity, treat as line to
+              currentX = coords[0] || currentX;
+              currentY = coords[1] || currentY;
+              const sPoint = new THREE.Vector3(-(currentX - centerX) * 0.001, (currentY - centerY) * 0.001, 0);
+              points.push(sPoint);
+              break;
+            case "s": // Smooth cubic bezier (relative)
+              currentX += coords[0] || 0;
+              currentY += coords[1] || 0;
+              const sPointRel = new THREE.Vector3(-(currentX - centerX) * 0.001, (currentY - centerY) * 0.001, 0);
+              points.push(sPointRel);
+              break;
+            case "Q": // Quadratic bezier (absolute)
+              // For simplicity, treat as line to
+              currentX = coords[2] || currentX;
+              currentY = coords[3] || currentY;
+              const qPoint = new THREE.Vector3(-(currentX - centerX) * 0.001, (currentY - centerY) * 0.001, 0);
+              points.push(qPoint);
+              break;
+            case "q": // Quadratic bezier (relative)
+              currentX += coords[2] || 0;
+              currentY += coords[3] || 0;
+              const qPointRel = new THREE.Vector3(-(currentX - centerX) * 0.001, (currentY - centerY) * 0.001, 0);
+              points.push(qPointRel);
+              break;
+            case "T": // Smooth quadratic bezier (absolute)
+              currentX = coords[0] || currentX;
+              currentY = coords[1] || currentY;
+              const tPoint = new THREE.Vector3(-(currentX - centerX) * 0.001, (currentY - centerY) * 0.001, 0);
+              points.push(tPoint);
+              break;
+            case "t": // Smooth quadratic bezier (relative)
+              currentX += coords[0] || 0;
+              currentY += coords[1] || 0;
+              const tPointRel = new THREE.Vector3(-(currentX - centerX) * 0.001, (currentY - centerY) * 0.001, 0);
+              points.push(tPointRel);
+              break;
+            case "A": // Arc (absolute) - simplified to line
+              currentX = coords[5] || currentX;
+              currentY = coords[6] || currentY;
+              const aPoint = new THREE.Vector3(-(currentX - centerX) * 0.001, (currentY - centerY) * 0.001, 0);
+              points.push(aPoint);
+              break;
+            case "a": // Arc (relative) - simplified to line
+              currentX += coords[5] || 0;
+              currentY += coords[6] || 0;
+              const aPointRel = new THREE.Vector3(-(currentX - centerX) * 0.001, (currentY - centerY) * 0.001, 0);
+              points.push(aPointRel);
+              break;
+            case "Z": // Close path
+            case "z":
+              // Close the path by connecting to the start point
+              if (points.length > 0) {
+                const firstPoint = points[0];
+                const lastPoint = points[points.length - 1];
+                const distance = firstPoint.distanceTo(lastPoint);
+                if (distance > 0.001) {
+                  points.push(firstPoint.clone());
+                }
+              }
+              break;
           }
         });
-
-        // Always close the path to create closed shapes
-        if (points.length > 1) {
-          const firstPoint = points[0];
-          const lastPoint = points[points.length - 1];
-          const distance = firstPoint.distanceTo(lastPoint);
-          if (distance > 0.001) {
-            points.push(firstPoint.clone());
-          }
-        }
       }
 
       if (points.length < 2) {
@@ -312,9 +428,9 @@ export function registerSvgFileLoader() {
           emissiveIntensity: emissiveIntensity,
           transparent: true,
           opacity: 1,
-          metalness: 0.1,
-          roughness: 0.2,
-          // side: THREE.DoubleSide, // Disabled for performance testing
+          metalness: 0.0,
+          roughness: 0.1,
+          side: THREE.FrontSide,
         });
 
         const mesh = new THREE.Mesh(geometry, material);
@@ -361,7 +477,9 @@ export function registerSvgFileLoader() {
         emissiveIntensity: componentData.emissiveIntensity,
         transparent: true,
         opacity: 1,
-        // side: THREE.DoubleSide, // Disabled for performance testing
+        metalness: 0.0,
+        roughness: 0.1,
+        side: THREE.FrontSide,
       });
 
       const mesh = new THREE.Mesh(geometry, material);
@@ -491,32 +609,40 @@ export function registerSvgFileLoader() {
         return;
       }
 
-      const svgDoc = this.data.svgFile.contentDocument;
-      if (svgDoc) {
-        const paths = this.extractPathsFromSVG(svgDoc.documentElement.outerHTML);
-        console.log("svg-file-loader: Re-extracted", paths.length, "paths for color update");
+      // Use fetch approach instead of contentDocument
+      const svgSrc = this.data.svgFile.getAttribute("src");
+      if (svgSrc) {
+        fetch(svgSrc)
+          .then((response) => response.text())
+          .then((svgText) => {
+            const paths = this.extractPathsFromSVG(svgText);
+            console.log("svg-file-loader: Re-extracted", paths.length, "paths for color update");
 
-        // Update acrylic sheet lights with new colors
-        this.updateAcrylicSheetLight(paths);
+            // Update acrylic sheet lights with new colors
+            this.updateAcrylicSheetLight(paths);
 
-        // Update existing mesh materials if they exist
-        const ledGroup = this.el.querySelector("#led-strips-group");
-        if (ledGroup && ledGroup.object3D) {
-          let meshIndex = 0;
-          ledGroup.object3D.traverse((child) => {
-            if (child.isMesh && meshIndex < paths.length) {
-              const pathData = paths[meshIndex];
-              if (pathData && pathData.color) {
-                child.material.color.setHex(pathData.color.replace("#", "0x"));
-                child.material.emissive.setHex(pathData.color.replace("#", "0x"));
-                child.material.needsUpdate = true;
-              }
-              meshIndex++;
+            // Update existing mesh materials if they exist
+            const ledGroup = this.el.querySelector("#led-strips-group");
+            if (ledGroup && ledGroup.object3D) {
+              let meshIndex = 0;
+              ledGroup.object3D.traverse((child) => {
+                if (child.isMesh && meshIndex < paths.length) {
+                  const pathData = paths[meshIndex];
+                  if (pathData && pathData.color) {
+                    child.material.color.setHex(pathData.color.replace("#", "0x"));
+                    child.material.emissive.setHex(pathData.color.replace("#", "0x"));
+                    child.material.needsUpdate = true;
+                  }
+                  meshIndex++;
+                }
+              });
             }
+          })
+          .catch((error) => {
+            console.error("svg-file-loader: Error updating colors:", error);
           });
-        }
       } else {
-        console.log("svg-file-loader: No SVG document found for color update");
+        console.log("svg-file-loader: No SVG src found for color update");
       }
     },
 
@@ -537,14 +663,23 @@ export function registerSvgFileLoader() {
         this.el.removeChild(existingGroup);
       }
 
-      // Re-extract paths and create new geometry
-      const svgDoc = this.data.svgFile.contentDocument;
-      if (svgDoc) {
-        this.paths = this.extractPathsFromSVGDocument(svgDoc);
-        this.createSVGLineGeometryFromDocument(svgDoc);
+      // Use fetch approach instead of contentDocument
+      const svgSrc = this.data.svgFile.getAttribute("src");
+      if (svgSrc) {
+        fetch(svgSrc)
+          .then((response) => response.text())
+          .then((svgText) => {
+            const paths = this.extractPathsFromSVG(svgText);
+            console.log("svg-file-loader: Re-extracted", paths.length, "paths for geometry regeneration");
+            this.createSVGLineGeometry(paths);
+          })
+          .catch((error) => {
+            console.error("svg-file-loader: Error regenerating geometry:", error);
+            this.createFallbackLine();
+          });
       } else {
-        console.log("svg-file-loader: No SVG document found for geometry regeneration");
-        return;
+        console.log("svg-file-loader: No SVG src found for geometry regeneration");
+        this.createFallbackLine();
       }
     },
 
@@ -651,9 +786,9 @@ export function registerSvgFileLoader() {
           emissiveIntensity: emissiveIntensity,
           transparent: true,
           opacity: 1,
-          metalness: 0.1,
-          roughness: 0.2,
-          // side: THREE.DoubleSide, // Disabled for performance testing
+          metalness: 0.0,
+          roughness: 0.1,
+          side: THREE.FrontSide,
         });
 
         const mesh = new THREE.Mesh(geometry, material);
@@ -664,12 +799,9 @@ export function registerSvgFileLoader() {
     },
 
     update: function () {
-      // Re-extract colors and regenerate geometry when SVG file changes
+      // Only regenerate geometry when SVG file changes, don't update colors here
       if (this.data.svgFile) {
-        console.log("svg-file-loader: SVG file changed, re-extracting colors and geometry");
-        if (this.data.useSvgColor) {
-          this.updateColors();
-        }
+        console.log("svg-file-loader: SVG file changed, regenerating geometry");
         this.regenerateGeometry();
       }
     },
@@ -690,11 +822,115 @@ export function registerSvgFileLoader() {
         secondary: secondaryColor,
       };
 
-      // Update the LED group colors if it exists
-      const ledGroup = this.el.querySelector("#led-strips-group");
-      if (ledGroup) {
-        this.updateLedGroupColors(ledGroup, primaryColor, secondaryColor);
+      // Instead of trying to update existing materials, reload the SVG with new colors
+      this.reloadSvgWithCustomColors(primaryColor, secondaryColor);
+    },
+
+    reloadSvgWithCustomColors: function (primaryColor, secondaryColor) {
+      console.log("svg-file-loader: Reloading SVG with custom colors");
+
+      // Clear existing geometry
+      const existingGroup = this.el.querySelector("#led-strips-group");
+      if (existingGroup) {
+        // Dispose of geometries and materials to free memory
+        existingGroup.object3D.traverse((child) => {
+          if (child.isMesh) {
+            if (child.geometry) child.geometry.dispose();
+            if (child.material) child.material.dispose();
+          }
+        });
+        this.el.removeChild(existingGroup);
       }
+
+      // Temporarily override the color extraction to use custom colors
+      const originalExtractColorFromElement = this.extractColorFromElement;
+      this.extractColorFromElement = function (element) {
+        // Return custom colors instead of extracting from SVG
+        const colors = [primaryColor, secondaryColor];
+        return colors[Math.floor(Math.random() * colors.length)]; // Randomly assign colors
+      };
+
+      // Reload the SVG
+      this.loadSVG();
+
+      // Restore original color extraction after a delay
+      setTimeout(() => {
+        this.extractColorFromElement = originalExtractColorFromElement;
+      }, 1000);
+    },
+
+    tryUpdateLedGroupColors: function (primaryColor, secondaryColor, retryCount = 0) {
+      const ledGroup = this.el.querySelector("#led-strips-group");
+      console.log(`svg-file-loader: Attempt ${retryCount + 1} - LED group found:`, !!ledGroup);
+
+      if (ledGroup && ledGroup.object3D && ledGroup.object3D.children.length > 0) {
+        console.log("svg-file-loader: LED group has", ledGroup.object3D.children.length, "meshes");
+        this.updateLedGroupColors(ledGroup, primaryColor, secondaryColor);
+      } else {
+        // Try alternative approach - look for meshes directly in this component's object3D
+        console.log("svg-file-loader: Trying alternative approach - checking component object3D");
+        this.updateComponentMeshes(primaryColor, secondaryColor);
+
+        if (retryCount < 10) {
+          // Retry up to 10 times with increasing delays
+          const delay = Math.min(100 * (retryCount + 1), 1000);
+          console.log(`svg-file-loader: LED group not ready, retrying in ${delay}ms`);
+          setTimeout(() => {
+            this.tryUpdateLedGroupColors(primaryColor, secondaryColor, retryCount + 1);
+          }, delay);
+        } else {
+          console.warn("svg-file-loader: Failed to find LED group after 10 attempts");
+        }
+      }
+    },
+
+    updateComponentMeshes: function (primaryColor, secondaryColor) {
+      const expandedPrimary = this.expandHexColor(primaryColor);
+      const expandedSecondary = this.expandHexColor(secondaryColor);
+      const colors = [expandedPrimary, expandedSecondary];
+
+      console.log("svg-file-loader: Updating component meshes with colors:", colors);
+
+      // Look for meshes in this component's object3D
+      this.el.object3D.traverse((child) => {
+        if (child.isMesh && child.material) {
+          console.log("svg-file-loader: Found mesh in component object3D");
+          const colorIndex = 0; // Use primary color for all meshes for now
+          const hexColor = colors[colorIndex].replace("#", "0x");
+
+          // Log current material properties
+          console.log(
+            "svg-file-loader: Before update - Color:",
+            child.material.color.getHexString(),
+            "Emissive:",
+            child.material.emissive.getHexString()
+          );
+
+          // Clone the material to avoid sharing issues
+          if (!child.material.isCloned) {
+            child.material = child.material.clone();
+            child.material.isCloned = true;
+            console.log("svg-file-loader: Cloned material for mesh");
+          }
+
+          child.material.color.setHex(hexColor);
+          child.material.emissive.setHex(hexColor);
+          child.material.emissiveIntensity = 1.0; // Ensure high emissive intensity
+          child.material.needsUpdate = true;
+
+          // Log after update
+          console.log(
+            "svg-file-loader: After update - Color:",
+            child.material.color.getHexString(),
+            "Emissive:",
+            child.material.emissive.getHexString()
+          );
+
+          // Force material update
+          child.material.color.needsUpdate = true;
+          child.material.emissive.needsUpdate = true;
+        }
+      });
     },
 
     updateLedGroupColors: function (ledGroup, primaryColor, secondaryColor) {
@@ -706,8 +942,10 @@ export function registerSvgFileLoader() {
       meshes.forEach((mesh, index) => {
         if (mesh.isMesh && mesh.material) {
           const colorIndex = index % colors.length;
-          mesh.material.color.setHex(colors[colorIndex].replace("#", "0x"));
-          mesh.material.emissive.setHex(colors[colorIndex].replace("#", "0x"));
+          const hexColor = colors[colorIndex].replace("#", "0x");
+          mesh.material.color.setHex(hexColor);
+          mesh.material.emissive.setHex(hexColor);
+          mesh.material.needsUpdate = true;
         }
       });
     },
