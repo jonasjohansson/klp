@@ -18,6 +18,7 @@ export function registerSvgSwapperUI() {
 
       this.createUI();
       this.setupEventListeners();
+      this.detectAvailableSvgs();
 
       // Initialize color pickers after a delay to allow SVG colors to load
       setTimeout(() => {
@@ -42,28 +43,98 @@ export function registerSvgSwapperUI() {
         min-width: 200px;
       `;
 
-      // Create title
-      const title = document.createElement("div");
-      title.textContent = "SVG Swapper";
-      title.style.cssText = `
-        font-weight: bold;
+      // Create header with title and toggle button
+      const header = document.createElement("div");
+      header.style.cssText = `
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         margin-bottom: 10px;
         border-bottom: 1px solid #333;
         padding-bottom: 5px;
       `;
-      this.uiContainer.appendChild(title);
 
-      // Create panel controls
-      for (let i = 1; i <= 4; i++) {
-        const panelControl = this.createPanelControl(i);
-        this.uiContainer.appendChild(panelControl);
-      }
+      const title = document.createElement("div");
+      title.textContent = "SVG Swapper";
+      title.style.cssText = `font-weight: bold;`;
+
+      // Create toggle button
+      this.toggleButton = document.createElement("button");
+      this.toggleButton.textContent = "−";
+      this.toggleButton.style.cssText = `
+        background: #333;
+        color: white;
+        border: 1px solid #555;
+        border-radius: 3px;
+        padding: 2px 6px;
+        cursor: pointer;
+        font-size: 12px;
+      `;
+      this.toggleButton.addEventListener("click", () => this.toggleUI());
+
+      header.appendChild(title);
+      header.appendChild(this.toggleButton);
+      this.uiContainer.appendChild(header);
+
+      // Create content container (will be hidden/shown)
+      this.contentContainer = document.createElement("div");
+      this.contentContainer.style.cssText = `transition: opacity 0.3s ease;`;
+      this.uiContainer.appendChild(this.contentContainer);
+
+      // Create panel controls (will be populated dynamically)
+      this.panelControlsContainer = document.createElement("div");
+      this.contentContainer.appendChild(this.panelControlsContainer);
 
       // Add to document
       document.body.appendChild(this.uiContainer);
     },
 
-    createPanelControl(panelNumber) {
+    toggleUI() {
+      const isVisible = this.contentContainer.style.opacity !== "0";
+      if (isVisible) {
+        this.contentContainer.style.opacity = "0";
+        this.contentContainer.style.pointerEvents = "none";
+        this.toggleButton.textContent = "+";
+      } else {
+        this.contentContainer.style.opacity = "1";
+        this.contentContainer.style.pointerEvents = "auto";
+        this.toggleButton.textContent = "−";
+      }
+    },
+
+    detectAvailableSvgs() {
+      console.log("svg-swapper: Detecting available SVG assets");
+
+      // Clear existing panel controls
+      this.panelControlsContainer.innerHTML = "";
+
+      // Check which SVG assets are actually defined in the scene
+      const availableSvgs = [];
+      for (let i = 1; i <= 4; i++) {
+        const svgAsset = document.querySelector(`#svg${i}`);
+        if (svgAsset) {
+          const src = svgAsset.getAttribute("src");
+          if (src) {
+            availableSvgs.push({
+              id: `svg${i}`,
+              src: src,
+              panelNumber: i,
+            });
+            console.log(`svg-swapper: Found SVG ${i}: ${src}`);
+          }
+        }
+      }
+
+      // Create panel controls only for available SVGs
+      availableSvgs.forEach((svg) => {
+        const panelControl = this.createPanelControl(svg.panelNumber, svg.src);
+        this.panelControlsContainer.appendChild(panelControl);
+      });
+
+      console.log(`svg-swapper: Created controls for ${availableSvgs.length} SVG panels`);
+    },
+
+    createPanelControl(panelNumber, svgSrc = null) {
       const panelDiv = document.createElement("div");
       panelDiv.style.cssText = `
         margin-bottom: 15px;
@@ -101,12 +172,21 @@ export function registerSvgSwapperUI() {
       `;
 
       // Add options for all available SVGs
-      const svgOptions = [
-        { value: "1", text: "klp_1.svg" },
-        { value: "2", text: "klp_2.svg" },
-        { value: "3", text: "klp_3.svg" },
-        { value: "4", text: "klp_4.svg" },
-      ];
+      const svgOptions = [];
+      for (let i = 1; i <= 4; i++) {
+        const svgAsset = document.querySelector(`#svg${i}`);
+        if (svgAsset) {
+          const src = svgAsset.getAttribute("src");
+          if (src) {
+            const filename = src.split("/").pop(); // Extract filename from path
+            svgOptions.push({
+              value: i.toString(),
+              text: filename,
+              src: src,
+            });
+          }
+        }
+      }
 
       svgOptions.forEach((option) => {
         const optionElement = document.createElement("option");
@@ -201,10 +281,12 @@ export function registerSvgSwapperUI() {
 
       // Color picker change handlers
       primaryColorPicker.addEventListener("change", () => {
+        console.log(`svg-swapper: Primary color changed for Panel ${panelNumber}: ${primaryColorPicker.value}`);
         this.updatePanelColors(panelNumber, primaryColorPicker.value, secondaryColorPicker.value);
       });
 
       secondaryColorPicker.addEventListener("change", () => {
+        console.log(`svg-swapper: Secondary color changed for Panel ${panelNumber}: ${secondaryColorPicker.value}`);
         this.updatePanelColors(panelNumber, primaryColorPicker.value, secondaryColorPicker.value);
       });
 
@@ -225,6 +307,12 @@ export function registerSvgSwapperUI() {
     setupEventListeners() {
       // Add keyboard shortcuts
       document.addEventListener("keydown", (event) => {
+        // Press 'H' to toggle UI visibility
+        if (event.key.toLowerCase() === "h" && !event.ctrlKey && !event.altKey && !event.metaKey) {
+          event.preventDefault();
+          this.toggleUI();
+        }
+
         if (event.ctrlKey || event.metaKey) {
           switch (event.key) {
             case "1":
@@ -400,7 +488,7 @@ export function registerSvgSwapperUI() {
     },
 
     updatePanelColors(panelNumber, primaryColor, secondaryColor) {
-      console.log(`Updating Panel ${panelNumber} colors: Primary=${primaryColor}, Secondary=${secondaryColor}`);
+      console.log(`svg-swapper: Updating Panel ${panelNumber} colors: Primary=${primaryColor}, Secondary=${secondaryColor}`);
 
       // Update lighting colors
       this.updateLightingColors(panelNumber, primaryColor, secondaryColor);
@@ -438,10 +526,19 @@ export function registerSvgSwapperUI() {
       const svgLoaders = panelEntity.querySelectorAll("a-entity[svg-file-loader]");
       console.log(`svg-swapper: Found ${svgLoaders.length} SVG loaders in Panel ${panelNumber}`);
 
+      if (svgLoaders.length === 0) {
+        console.warn(`svg-swapper: No SVG loaders found in Panel ${panelNumber}`);
+        return;
+      }
+
       svgLoaders.forEach((loader, index) => {
         const svgFileLoaderComponent = loader.components["svg-file-loader"];
         if (svgFileLoaderComponent) {
-          console.log(`svg-swapper: Updating SVG loader ${index + 1} colors`);
+          console.log(
+            `svg-swapper: Updating SVG loader ${
+              index + 1
+            } in Panel ${panelNumber} with colors: Primary=${primaryColor}, Secondary=${secondaryColor}`
+          );
           // Update the colors in the SVG file loader
           svgFileLoaderComponent.updateCustomColors(primaryColor, secondaryColor);
         } else {

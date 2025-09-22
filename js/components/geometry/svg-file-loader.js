@@ -814,7 +814,7 @@ export function registerSvgFileLoader() {
 
     // Public method to update colors manually
     updateCustomColors: function (primaryColor, secondaryColor) {
-      console.log(`svg-file-loader: Updating custom colors - Primary: ${primaryColor}, Secondary: ${secondaryColor}`);
+      console.log(`svg-file-loader: Updating custom colors for component - Primary: ${primaryColor}, Secondary: ${secondaryColor}`);
 
       // Store the custom colors
       this.customColors = {
@@ -828,6 +828,14 @@ export function registerSvgFileLoader() {
 
     reloadSvgWithCustomColors: function (primaryColor, secondaryColor) {
       console.log("svg-file-loader: Reloading SVG with custom colors");
+
+      // Store original component data to restore after reload
+      const originalData = {
+        lineThickness: this.data.lineThickness,
+        emissiveIntensity: this.data.emissiveIntensity,
+        useSvgColor: this.data.useSvgColor,
+        svgFile: this.data.svgFile,
+      };
 
       // Clear existing geometry
       const existingGroup = this.el.querySelector("#led-strips-group");
@@ -844,11 +852,34 @@ export function registerSvgFileLoader() {
 
       // Temporarily override the color extraction to use custom colors
       const originalExtractColorFromElement = this.extractColorFromElement;
+      let elementIndex = 0;
       this.extractColorFromElement = function (element) {
-        // Return custom colors instead of extracting from SVG
+        // Extract the original color to determine which custom color to use
+        const originalColor = originalExtractColorFromElement.call(this, element);
+
+        // Use a more intelligent color assignment based on the original color
+        // This helps preserve the original color distribution pattern
+        let selectedColor;
+
+        // Use alternating pattern to ensure both colors are used
+        // This ensures both primary and secondary colors are visible
         const colors = [primaryColor, secondaryColor];
-        return colors[Math.floor(Math.random() * colors.length)]; // Randomly assign colors
+        selectedColor = colors[elementIndex % colors.length];
+
+        // Debug logging (only for first few elements to avoid spam)
+        if (elementIndex < 5) {
+          console.log(`svg-file-loader: Element ${elementIndex} - Original: ${originalColor}, Selected: ${selectedColor}`);
+        }
+
+        elementIndex++;
+        return selectedColor;
       };
+
+      // Ensure component data is properly set before reloading
+      this.data.lineThickness = originalData.lineThickness;
+      this.data.emissiveIntensity = originalData.emissiveIntensity;
+      this.data.useSvgColor = originalData.useSvgColor;
+      this.data.svgFile = originalData.svgFile;
 
       // Reload the SVG
       this.loadSVG();
