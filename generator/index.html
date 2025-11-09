@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grid Pattern Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #fafafa;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 4px;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 24px;
+            font-weight: 500;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 5px;
+            font-weight: 400;
+            color: #666;
+            font-size: 14px;
+        }
+
+        input[type="number"],
+        input[type="color"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+
+        input[type="number"] {
+            width: 100%;
+        }
+
+        input[type="color"] {
+            width: 100%;
+            height: 40px;
+            cursor: pointer;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #000;
+        }
+
+        .preview-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #fafafa;
+            border: 1px solid #e0e0e0;
+            border-radius: 3px;
+            padding: 30px;
+            margin-bottom: 15px;
+            min-height: 400px;
+        }
+
+        #preview {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #preview svg {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        
+        .dimensions-display {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: #fafafa;
+            border-radius: 3px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .dimension-info {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .dimension-info strong {
+            margin-right: 8px;
+            font-weight: 500;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-secondary {
+            background: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Grid Pattern Generator</h1>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="rows">Rows:</label>
+                <input type="number" id="rows" value="16" min="1" max="100">
+            </div>
+            
+            <div class="control-group">
+                <label for="columns">Columns:</label>
+                <input type="number" id="columns" value="16" min="1" max="100">
+            </div>
+            
+            <div class="control-group" style="display: flex; align-items: center; justify-content: flex-start; padding-top: 20px;">
+                <input type="checkbox" id="lockRowsColumns" style="width: auto; margin-right: 8px; cursor: pointer;">
+                <label for="lockRowsColumns" style="margin-bottom: 0; cursor: pointer;">Lock rows and columns</label>
+            </div>
+            
+            <div class="control-group">
+                <label for="lineThickness">Line Thickness (mm):</label>
+                <input type="number" id="lineThickness" value="6" min="1" max="10">
+            </div>
+            
+            <div class="control-group">
+                <label for="lineLength">Line Length (mm):</label>
+                <input type="number" id="lineLength" value="30" min="1" max="50">
+            </div>
+            
+            <div class="control-group">
+                <label for="spacing">Spacing Between Lines (mm):</label>
+                <input type="number" id="spacing" value="30" min="1" max="100">
+            </div>
+            
+            <div class="control-group">
+                <label for="horizontalColor">Horizontal Color:</label>
+                <input type="color" id="horizontalColor" value="#ff69b4">
+            </div>
+            
+            <div class="control-group">
+                <label for="verticalColor">Vertical Color:</label>
+                <input type="color" id="verticalColor" value="#ff0000">
+            </div>
+            
+            <div class="control-group">
+                <label for="cornerCircleSize">Corner Circle Size (mm):</label>
+                <input type="number" id="cornerCircleSize" value="6" min="1" max="20">
+            </div>
+            
+            <div class="control-group">
+                <label for="cornerCircleDistance">Corner Circle Distance from Canvas Edge (mm):</label>
+                <input type="number" id="cornerCircleDistance" value="20" min="0" max="50">
+            </div>
+            
+            <div class="control-group">
+                <label for="padding">Padding (mm):</label>
+                <input type="number" id="padding" value="30" min="0" max="100">
+            </div>
+        </div>
+
+        <div class="preview-container">
+            <div id="preview"></div>
+        </div>
+        
+        <div class="dimensions-display">
+            <div class="dimension-info">
+                <strong>Canvas Dimensions:</strong>
+                <span id="canvasWidth">-</span> mm × <span id="canvasHeight">-</span> mm
+            </div>
+        </div>
+
+        <div class="actions">
+            <button onclick="generatePattern()">Generate Pattern</button>
+            <button class="btn-secondary" onclick="downloadSVG()">Export SVG</button>
+            <button class="btn-secondary" onclick="copySVG()">Copy SVG Code</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSVG = null;
+
+        function generatePattern() {
+            const rowsInput = document.getElementById('rows').value;
+            const columnsInput = document.getElementById('columns').value;
+            const lineThicknessInput = document.getElementById('lineThickness').value;
+            const lineLengthInput = document.getElementById('lineLength').value;
+            const spacingInput = document.getElementById('spacing').value;
+            const paddingInput = document.getElementById('padding').value;
+            const lockRowsColumns = document.getElementById('lockRowsColumns').checked;
+            
+            let rows = Math.max(1, parseInt(rowsInput) || 16);
+            let columns = Math.max(1, parseInt(columnsInput) || 16);
+            
+            // If locked, sync rows and columns
+            if (lockRowsColumns) {
+                // Determine which one was changed by comparing with stored value
+                const lastRows = parseInt(document.getElementById('rows').dataset.lastValue || rows);
+                const lastColumns = parseInt(document.getElementById('columns').dataset.lastValue || columns);
+                
+                if (rows !== lastRows) {
+                    // Rows changed, update columns
+                    columns = rows;
+                    document.getElementById('columns').value = columns;
+                } else if (columns !== lastColumns) {
+                    // Columns changed, update rows
+                    rows = columns;
+                    document.getElementById('rows').value = rows;
+                }
+                
+                // Store current values
+                document.getElementById('rows').dataset.lastValue = rows;
+                document.getElementById('columns').dataset.lastValue = columns;
+            }
+            const lineThickness = Math.max(1, parseInt(lineThicknessInput) || 6);
+            const lineLength = Math.max(1, parseInt(lineLengthInput) || 30);
+            const spacing = Math.max(1, parseInt(spacingInput) || 30);
+            const padding = Math.max(0, parseInt(paddingInput) || 30);
+            const cornerCircleSize = Math.max(1, parseInt(document.getElementById('cornerCircleSize').value) || 6);
+            const cornerCircleDistance = Math.max(0, parseInt(document.getElementById('cornerCircleDistance').value) || 20);
+            const horizontalColor = document.getElementById('horizontalColor').value;
+            const verticalColor = document.getElementById('verticalColor').value;
+
+            // Update input values to ensure they're valid integers
+            if (rowsInput !== rows.toString()) {
+                document.getElementById('rows').value = rows;
+            }
+            if (columnsInput !== columns.toString()) {
+                document.getElementById('columns').value = columns;
+            }
+            if (lineThicknessInput !== lineThickness.toString()) {
+                document.getElementById('lineThickness').value = lineThickness;
+            }
+            if (lineLengthInput !== lineLength.toString()) {
+                document.getElementById('lineLength').value = lineLength;
+            }
+            if (spacingInput !== spacing.toString()) {
+                document.getElementById('spacing').value = spacing;
+            }
+            if (document.getElementById('cornerCircleSize').value !== cornerCircleSize.toString()) {
+                document.getElementById('cornerCircleSize').value = cornerCircleSize;
+            }
+            if (document.getElementById('cornerCircleDistance').value !== cornerCircleDistance.toString()) {
+                document.getElementById('cornerCircleDistance').value = cornerCircleDistance;
+            }
+            if (document.getElementById('padding').value !== padding.toString()) {
+                document.getElementById('padding').value = padding;
+            }
+
+            // Calculate dimensions in mm
+            
+            const patternWidth = columns * spacing + padding * 2;
+            const patternHeight = rows * spacing + padding * 2;
+            
+            // Use a fixed viewBox size for consistent visual scaling
+            // This ensures the pattern always fills the container
+            const viewBoxSize = 1000;
+            const scaleX = viewBoxSize / patternWidth;
+            const scaleY = viewBoxSize / patternHeight;
+            const scale = Math.min(scaleX, scaleY); // Maintain aspect ratio
+
+            // Create SVG - responsive to fit container, but export will use mm
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('viewBox', `0 0 ${viewBoxSize} ${viewBoxSize}`);
+            svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+            svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+            
+            // Create a group to scale the pattern to fit the viewBox
+            const patternGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            const offsetX = (viewBoxSize - patternWidth * scale) / 2;
+            const offsetY = (viewBoxSize - patternHeight * scale) / 2;
+            patternGroup.setAttribute('transform', `translate(${offsetX}, ${offsetY}) scale(${scale})`);
+            svg.appendChild(patternGroup);
+
+            // White background
+            const background = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            background.setAttribute('width', `${patternWidth}`);
+            background.setAttribute('height', `${patternHeight}`);
+            background.setAttribute('fill', '#ffffff');
+            patternGroup.appendChild(background);
+            
+            // SVG outline/border with rounded corners
+            const outline = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            outline.setAttribute('x', '0');
+            outline.setAttribute('y', '0');
+            outline.setAttribute('width', `${patternWidth}`);
+            outline.setAttribute('height', `${patternHeight}`);
+            outline.setAttribute('rx', `${cornerCircleSize}`);
+            outline.setAttribute('ry', `${cornerCircleSize}`);
+            outline.setAttribute('fill', 'none');
+            outline.setAttribute('stroke', '#333333');
+            outline.setAttribute('stroke-width', '1');
+            patternGroup.appendChild(outline);
+
+            // Generate segments
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < columns; col++) {
+                    const isEven = (row + col) % 2 === 0;
+                    const isHorizontal = isEven;
+                    
+                    const x = padding + col * spacing + spacing / 2;
+                    const y = padding + row * spacing + spacing / 2;
+                    
+                    const segment = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    
+                    if (isHorizontal) {
+                        // Horizontal segment
+                        segment.setAttribute('x1', `${x - lineLength / 2}`);
+                        segment.setAttribute('y1', `${y}`);
+                        segment.setAttribute('x2', `${x + lineLength / 2}`);
+                        segment.setAttribute('y2', `${y}`);
+                        segment.setAttribute('stroke', horizontalColor);
+                    } else {
+                        // Vertical segment
+                        segment.setAttribute('x1', `${x}`);
+                        segment.setAttribute('y1', `${y - lineLength / 2}`);
+                        segment.setAttribute('x2', `${x}`);
+                        segment.setAttribute('y2', `${y + lineLength / 2}`);
+                        segment.setAttribute('stroke', verticalColor);
+                    }
+                    
+                    segment.setAttribute('stroke-width', `${lineThickness}`);
+                    segment.setAttribute('stroke-linecap', 'round');
+                    patternGroup.appendChild(segment);
+                }
+            }
+
+            // Add corner circles - positioned relative to canvas outline (which is at 0,0)
+            const corners = [
+                { x: cornerCircleDistance, y: cornerCircleDistance }, // Top-left
+                { x: patternWidth - cornerCircleDistance, y: cornerCircleDistance }, // Top-right
+                { x: cornerCircleDistance, y: patternHeight - cornerCircleDistance }, // Bottom-left
+                { x: patternWidth - cornerCircleDistance, y: patternHeight - cornerCircleDistance } // Bottom-right
+            ];
+
+            corners.forEach(corner => {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', `${corner.x}`);
+                circle.setAttribute('cy', `${corner.y}`);
+                circle.setAttribute('r', `${cornerCircleSize}`);
+                circle.setAttribute('fill', 'none');
+                circle.setAttribute('stroke', '#000000');
+                circle.setAttribute('stroke-width', '1');
+                patternGroup.appendChild(circle);
+            });
+
+
+            // Update preview
+            const preview = document.getElementById('preview');
+            preview.innerHTML = '';
+            preview.appendChild(svg);
+            
+            // Update dimensions display
+            document.getElementById('canvasWidth').textContent = patternWidth;
+            document.getElementById('canvasHeight').textContent = patternHeight;
+
+            // Store current SVG for download/copy
+            currentSVG = svg;
+        }
+
+        function downloadSVG() {
+            if (!currentSVG) {
+                alert('Please generate a pattern first!');
+                return;
+            }
+
+            // Clone the SVG and add mm dimensions for export
+            // We need to extract the actual pattern dimensions from the group
+            const exportSvg = currentSVG.cloneNode(true);
+            const patternGroup = exportSvg.querySelector('g');
+            if (patternGroup) {
+                // Get the actual pattern dimensions from the background rect
+                const background = patternGroup.querySelector('rect');
+                if (background) {
+                    const width = parseFloat(background.getAttribute('width'));
+                    const height = parseFloat(background.getAttribute('height'));
+                    exportSvg.setAttribute('width', `${width}mm`);
+                    exportSvg.setAttribute('height', `${height}mm`);
+                    exportSvg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+                    
+                    // Remove the transform group and flatten the structure for export
+                    const children = Array.from(patternGroup.children);
+                    patternGroup.remove();
+                    children.forEach(child => exportSvg.appendChild(child));
+                }
+            }
+
+            const serializer = new XMLSerializer();
+            const svgString = serializer.serializeToString(exportSvg);
+            const blob = new Blob([svgString], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `grid-pattern-${Date.now()}.svg`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        function copySVG() {
+            if (!currentSVG) {
+                alert('Please generate a pattern first!');
+                return;
+            }
+
+            // Clone the SVG and add mm dimensions for export
+            // We need to extract the actual pattern dimensions from the group
+            const exportSvg = currentSVG.cloneNode(true);
+            const patternGroup = exportSvg.querySelector('g');
+            if (patternGroup) {
+                // Get the actual pattern dimensions from the background rect
+                const background = patternGroup.querySelector('rect');
+                if (background) {
+                    const width = parseFloat(background.getAttribute('width'));
+                    const height = parseFloat(background.getAttribute('height'));
+                    exportSvg.setAttribute('width', `${width}mm`);
+                    exportSvg.setAttribute('height', `${height}mm`);
+                    exportSvg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+                    
+                    // Remove the transform group and flatten the structure for export
+                    const children = Array.from(patternGroup.children);
+                    patternGroup.remove();
+                    children.forEach(child => exportSvg.appendChild(child));
+                }
+            }
+
+            const serializer = new XMLSerializer();
+            const svgString = serializer.serializeToString(exportSvg);
+            
+            navigator.clipboard.writeText(svgString).then(() => {
+                alert('SVG code copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                alert('Failed to copy to clipboard. Please try downloading instead.');
+            });
+        }
+
+        // Generate pattern on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            generatePattern();
+        });
+
+        // Auto-generate on input change
+        const inputs = ['rows', 'columns', 'lineThickness', 'lineLength', 'spacing', 'cornerCircleSize', 'cornerCircleDistance', 'padding'];
+        inputs.forEach(id => {
+            const input = document.getElementById(id);
+            input.addEventListener('input', generatePattern);
+            input.addEventListener('change', generatePattern);
+            input.addEventListener('blur', generatePattern);
+        });
+        
+        // Lock checkbox
+        document.getElementById('lockRowsColumns').addEventListener('change', function() {
+            if (this.checked) {
+                // When locking, sync them to the current rows value
+                const rows = parseInt(document.getElementById('rows').value) || 16;
+                document.getElementById('columns').value = rows;
+                document.getElementById('rows').dataset.lastValue = rows;
+                document.getElementById('columns').dataset.lastValue = rows;
+            }
+            generatePattern();
+        });
+        
+        document.getElementById('horizontalColor').addEventListener('input', generatePattern);
+        document.getElementById('verticalColor').addEventListener('input', generatePattern);
+    </script>
+</body>
+</html>
+
