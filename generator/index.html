@@ -1,515 +1,816 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0" />
     <title>Grid Pattern Generator</title>
+    <script type="module">
+      import GUI from "https://cdn.jsdelivr.net/npm/lil-gui@0.21/+esm";
+      window.GUI = GUI;
+    </script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #fafafa;
-            padding: 20px;
-        }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: #fafafa;
+        padding: 20px;
+      }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 4px;
-            padding: 20px;
-        }
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+      }
 
-        h1 {
-            margin-bottom: 20px;
-            color: #333;
-            font-size: 24px;
-            font-weight: 500;
-        }
+      .preview-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #fafafa;
+        border: 1px solid #e0e0e0;
+        border-radius: 3px;
+        padding: 30px;
+        margin-bottom: 15px;
+        min-height: 500px;
+      }
 
-        .controls {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
+      #preview {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
 
-        .control-group {
-            display: flex;
-            flex-direction: column;
-        }
+      #preview svg {
+        max-width: 100%;
+        max-height: 100%;
+      }
 
-        label {
-            margin-bottom: 5px;
-            font-weight: 400;
-            color: #666;
-            font-size: 14px;
-        }
+      .dimensions-display {
+        margin-bottom: 15px;
+        padding: 12px;
+        background: #fafafa;
+        border-radius: 3px;
+        border: 1px solid #e0e0e0;
+        font-size: 14px;
+        color: #666;
+      }
 
-        input[type="number"],
-        input[type="color"] {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-            font-size: 14px;
-        }
+      .dimension-info strong {
+        margin-right: 8px;
+        font-weight: 500;
+      }
 
-        input[type="number"] {
-            width: 100%;
-        }
+      /* Style for partial state */
+      .segment-partial {
+        opacity: 1;
+      }
 
-        input[type="color"] {
-            width: 100%;
-            height: 40px;
-            cursor: pointer;
-        }
-
-        button {
-            padding: 10px 20px;
-            background: #333;
-            color: white;
-            border: none;
-            border-radius: 3px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        button:hover {
-            background: #000;
-        }
-
-        .preview-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #fafafa;
-            border: 1px solid #e0e0e0;
-            border-radius: 3px;
-            padding: 30px;
-            margin-bottom: 15px;
-            min-height: 400px;
-        }
-
-        #preview {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        #preview svg {
-            max-width: 100%;
-            max-height: 100%;
-        }
-        
-        .dimensions-display {
-            margin-bottom: 15px;
-            padding: 12px;
-            background: #fafafa;
-            border-radius: 3px;
-            border: 1px solid #e0e0e0;
-        }
-        
-        .dimension-info {
-            font-size: 14px;
-            color: #666;
-        }
-        
-        .dimension-info strong {
-            margin-right: 8px;
-            font-weight: 500;
-        }
-
-        .actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .btn-secondary {
-            background: #666;
-        }
-
-        .btn-secondary:hover {
-            background: #555;
-        }
+      /* Make segments clickable */
+      line[data-segment-id] {
+        cursor: pointer;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <h1>Grid Pattern Generator</h1>
-        
-        <div class="controls">
-            <div class="control-group">
-                <label for="rows">Rows:</label>
-                <input type="number" id="rows" value="16" min="1" max="100">
-            </div>
-            
-            <div class="control-group">
-                <label for="columns">Columns:</label>
-                <input type="number" id="columns" value="16" min="1" max="100">
-            </div>
-            
-            <div class="control-group" style="display: flex; align-items: center; justify-content: flex-start; padding-top: 20px;">
-                <input type="checkbox" id="lockRowsColumns" style="width: auto; margin-right: 8px; cursor: pointer;">
-                <label for="lockRowsColumns" style="margin-bottom: 0; cursor: pointer;">Lock rows and columns</label>
-            </div>
-            
-            <div class="control-group">
-                <label for="lineThickness">Line Thickness (mm):</label>
-                <input type="number" id="lineThickness" value="6" min="1" max="10">
-            </div>
-            
-            <div class="control-group">
-                <label for="lineLength">Line Length (mm):</label>
-                <input type="number" id="lineLength" value="30" min="1" max="50">
-            </div>
-            
-            <div class="control-group">
-                <label for="spacing">Spacing Between Lines (mm):</label>
-                <input type="number" id="spacing" value="30" min="1" max="100">
-            </div>
-            
-            <div class="control-group">
-                <label for="horizontalColor">Horizontal Color:</label>
-                <input type="color" id="horizontalColor" value="#ff69b4">
-            </div>
-            
-            <div class="control-group">
-                <label for="verticalColor">Vertical Color:</label>
-                <input type="color" id="verticalColor" value="#ff0000">
-            </div>
-            
-            <div class="control-group">
-                <label for="cornerCircleSize">Corner Circle Size (mm):</label>
-                <input type="number" id="cornerCircleSize" value="6" min="1" max="20">
-            </div>
-            
-            <div class="control-group">
-                <label for="cornerCircleDistance">Corner Circle Distance from Canvas Edge (mm):</label>
-                <input type="number" id="cornerCircleDistance" value="20" min="0" max="50">
-            </div>
-            
-            <div class="control-group">
-                <label for="padding">Padding (mm):</label>
-                <input type="number" id="padding" value="30" min="0" max="100">
-            </div>
-        </div>
+      <div class="preview-container">
+        <div id="preview"></div>
+      </div>
 
-        <div class="preview-container">
-            <div id="preview"></div>
+      <div class="dimensions-display">
+        <div class="dimension-info">
+          <strong>Canvas Dimensions:</strong>
+          <span id="canvasWidth">-</span> mm × <span id="canvasHeight">-</span> mm
         </div>
-        
-        <div class="dimensions-display">
-            <div class="dimension-info">
-                <strong>Canvas Dimensions:</strong>
-                <span id="canvasWidth">-</span> mm × <span id="canvasHeight">-</span> mm
-            </div>
-        </div>
-
-        <div class="actions">
-            <button onclick="generatePattern()">Generate Pattern</button>
-            <button class="btn-secondary" onclick="downloadSVG()">Export SVG</button>
-            <button class="btn-secondary" onclick="copySVG()">Copy SVG Code</button>
-        </div>
+      </div>
     </div>
 
-    <script>
-        let currentSVG = null;
+    <script type="module">
+      import GUI from "https://cdn.jsdelivr.net/npm/lil-gui@0.21/+esm";
 
-        function generatePattern() {
-            const rowsInput = document.getElementById('rows').value;
-            const columnsInput = document.getElementById('columns').value;
-            const lineThicknessInput = document.getElementById('lineThickness').value;
-            const lineLengthInput = document.getElementById('lineLength').value;
-            const spacingInput = document.getElementById('spacing').value;
-            const paddingInput = document.getElementById('padding').value;
-            const lockRowsColumns = document.getElementById('lockRowsColumns').checked;
-            
-            let rows = Math.max(1, parseInt(rowsInput) || 16);
-            let columns = Math.max(1, parseInt(columnsInput) || 16);
-            
-            // If locked, sync rows and columns
-            if (lockRowsColumns) {
-                // Determine which one was changed by comparing with stored value
-                const lastRows = parseInt(document.getElementById('rows').dataset.lastValue || rows);
-                const lastColumns = parseInt(document.getElementById('columns').dataset.lastValue || columns);
-                
-                if (rows !== lastRows) {
-                    // Rows changed, update columns
-                    columns = rows;
-                    document.getElementById('columns').value = columns;
-                } else if (columns !== lastColumns) {
-                    // Columns changed, update rows
-                    rows = columns;
-                    document.getElementById('rows').value = rows;
-                }
-                
-                // Store current values
-                document.getElementById('rows').dataset.lastValue = rows;
-                document.getElementById('columns').dataset.lastValue = columns;
-            }
-            const lineThickness = Math.max(1, parseInt(lineThicknessInput) || 6);
-            const lineLength = Math.max(1, parseInt(lineLengthInput) || 30);
-            const spacing = Math.max(1, parseInt(spacingInput) || 30);
-            const padding = Math.max(0, parseInt(paddingInput) || 30);
-            const cornerCircleSize = Math.max(1, parseInt(document.getElementById('cornerCircleSize').value) || 6);
-            const cornerCircleDistance = Math.max(0, parseInt(document.getElementById('cornerCircleDistance').value) || 20);
-            const horizontalColor = document.getElementById('horizontalColor').value;
-            const verticalColor = document.getElementById('verticalColor').value;
+      let currentSVG = null;
+      let segmentMap = new Map(); // Map of segmentId -> {element, row, col, state}
+      // Segment states: 'normal', 'partial-top', 'partial-bottom', 'dimmed'
+      let segmentStates = new Map(); // Map of segmentId -> state
+      let dimmedSegments = new Set(); // Set of dimmed segment IDs (independent of other states)
 
-            // Update input values to ensure they're valid integers
-            if (rowsInput !== rows.toString()) {
-                document.getElementById('rows').value = rows;
+      // Grid offset tracking: how many rows/columns added to top/left
+      let rowOffsetTop = 0; // Rows added to top
+      let rowOffsetBottom = 0; // Rows added to bottom (calculated)
+      let colOffsetLeft = 0; // Columns added to left
+      let colOffsetRight = 0; // Columns added to right (calculated)
+
+      // Selected region tracking
+      let selectedRegion = null; // {startRow, endRow, startCol, endCol} in absolute grid coordinates
+
+      // Configuration object
+      const config = {
+        rows: 16,
+        columns: 16,
+        lockRowsColumns: false,
+        lineThickness: 6,
+        lineLength: 30,
+        spacing: 30,
+        padding: 30,
+        horizontalColor: "#ff69b4",
+        verticalColor: "#ff0000",
+        cornerCircleSize: 6,
+        cornerCircleDistance: 20,
+        dimmedOpacity: 0.3,
+        addColumnTop: () => {
+          colOffsetLeft++;
+          generatePattern();
+          updateAllGUIControls();
+        },
+        addColumnBottom: () => {
+          colOffsetRight++;
+          generatePattern();
+          updateAllGUIControls();
+        },
+        removeColumnTop: () => {
+          if (colOffsetLeft > 0) {
+            colOffsetLeft--;
+            generatePattern();
+            updateAllGUIControls();
+          }
+        },
+        removeColumnBottom: () => {
+          if (colOffsetRight > 0) {
+            colOffsetRight--;
+            generatePattern();
+            updateAllGUIControls();
+          }
+        },
+        addRowLeft: () => {
+          rowOffsetTop++;
+          generatePattern();
+          updateAllGUIControls();
+        },
+        addRowRight: () => {
+          rowOffsetBottom++;
+          generatePattern();
+          updateAllGUIControls();
+        },
+        removeRowLeft: () => {
+          if (rowOffsetTop > 0) {
+            rowOffsetTop--;
+            generatePattern();
+            updateAllGUIControls();
+          }
+        },
+        removeRowRight: () => {
+          if (rowOffsetBottom > 0) {
+            rowOffsetBottom--;
+            generatePattern();
+            updateAllGUIControls();
+          }
+        },
+        clearOffsets: () => {
+          rowOffsetTop = 0;
+          rowOffsetBottom = 0;
+          colOffsetLeft = 0;
+          colOffsetRight = 0;
+          generatePattern();
+          updateAllGUIControls();
+        },
+        invertSelection: () => {
+          // Invert dimmed state: dim all non-dimmed segments, and un-dim all dimmed segments
+          segmentMap.forEach((segment, segmentId) => {
+            if (dimmedSegments.has(segmentId)) {
+              // Remove dimmed state
+              dimmedSegments.delete(segmentId);
+              segment.element.classList.remove("segment-dimmed");
+              segment.element.style.opacity = "";
+            } else {
+              // Add dimmed state
+              dimmedSegments.add(segmentId);
+              segment.element.classList.add("segment-dimmed");
+              segment.element.style.opacity = config.dimmedOpacity;
             }
-            if (columnsInput !== columns.toString()) {
-                document.getElementById('columns').value = columns;
+          });
+        },
+        saveConfig: () => {
+          // Only save actual config properties, not functions
+          const saveData = {
+            rows: config.rows,
+            columns: config.columns,
+            lockRowsColumns: config.lockRowsColumns,
+            lineThickness: config.lineThickness,
+            lineLength: config.lineLength,
+            spacing: config.spacing,
+            padding: config.padding,
+            horizontalColor: config.horizontalColor,
+            verticalColor: config.verticalColor,
+            cornerCircleSize: config.cornerCircleSize,
+            cornerCircleDistance: config.cornerCircleDistance,
+            dimmedOpacity: config.dimmedOpacity,
+            rowOffsetTop: rowOffsetTop,
+            rowOffsetBottom: rowOffsetBottom,
+            colOffsetLeft: colOffsetLeft,
+            colOffsetRight: colOffsetRight,
+            selectedRegion: selectedRegion,
+            segmentStates: Object.fromEntries(segmentStates),
+            dimmedSegments: Array.from(dimmedSegments),
+          };
+          localStorage.setItem("gridPatternConfig", JSON.stringify(saveData));
+          alert("Configuration saved!");
+        },
+        loadConfig: () => {
+          const saved = localStorage.getItem("gridPatternConfig");
+          if (saved) {
+            try {
+              const data = JSON.parse(saved);
+              Object.assign(config, data);
+              if (data.segmentStates) {
+                segmentStates = new Map(Object.entries(data.segmentStates));
+              } else if (data.hiddenSegments) {
+                // Legacy support: convert old hiddenSegments to new format
+                segmentStates = new Map();
+                data.hiddenSegments.forEach((id) => {
+                  segmentStates.set(id, "dimmed-outline");
+                });
+              }
+              if (data.dimmedSegments) {
+                dimmedSegments = new Set(data.dimmedSegments);
+              }
+              if (data.rowOffsetTop !== undefined) rowOffsetTop = data.rowOffsetTop;
+              if (data.rowOffsetBottom !== undefined) rowOffsetBottom = data.rowOffsetBottom;
+              if (data.colOffsetLeft !== undefined) colOffsetLeft = data.colOffsetLeft;
+              if (data.colOffsetRight !== undefined) colOffsetRight = data.colOffsetRight;
+              if (data.selectedRegion) selectedRegion = data.selectedRegion;
+              updateAllGUIControls();
+              generatePattern();
+              // Update dimmed opacity for loaded dimmed segments (after pattern is generated)
+              updateDimmedOpacity();
+              alert("Configuration loaded!");
+            } catch (e) {
+              alert("Failed to load configuration");
             }
-            if (lineThicknessInput !== lineThickness.toString()) {
-                document.getElementById('lineThickness').value = lineThickness;
-            }
-            if (lineLengthInput !== lineLength.toString()) {
-                document.getElementById('lineLength').value = lineLength;
-            }
-            if (spacingInput !== spacing.toString()) {
-                document.getElementById('spacing').value = spacing;
-            }
-            if (document.getElementById('cornerCircleSize').value !== cornerCircleSize.toString()) {
-                document.getElementById('cornerCircleSize').value = cornerCircleSize;
-            }
-            if (document.getElementById('cornerCircleDistance').value !== cornerCircleDistance.toString()) {
-                document.getElementById('cornerCircleDistance').value = cornerCircleDistance;
-            }
-            if (document.getElementById('padding').value !== padding.toString()) {
-                document.getElementById('padding').value = padding;
+          } else {
+            alert("No saved configuration found");
+          }
+        },
+        resetSelection: () => {
+          // Reset all segments to normal state
+          segmentStates.clear();
+          dimmedSegments.clear();
+          // Regenerate pattern to apply reset
+          generatePattern();
+        },
+        exportSVG: () => downloadSVG(),
+        copySVG: () => copySVG(),
+      };
+
+      // Create GUI
+      const gui = new GUI({ title: "Grid Pattern Generator" });
+
+      const gridFolder = gui.addFolder("Grid");
+      const rowsControl = gridFolder.add(config, "rows", 1, 100, 1).name("Rows");
+      const columnsControl = gridFolder.add(config, "columns", 1, 100, 1).name("Columns");
+      const lockControl = gridFolder.add(config, "lockRowsColumns").name("Lock Rows/Columns");
+
+      const gridModifyFolder = gridFolder.addFolder("Modify Grid");
+      gridModifyFolder.add(config, "addColumnTop").name("Add Column (Top)");
+      gridModifyFolder.add(config, "removeColumnTop").name("Remove Column (Top)");
+      gridModifyFolder.add(config, "addColumnBottom").name("Add Column (Bottom)");
+      gridModifyFolder.add(config, "removeColumnBottom").name("Remove Column (Bottom)");
+      gridModifyFolder.add(config, "addRowLeft").name("Add Row (Left)");
+      gridModifyFolder.add(config, "removeRowLeft").name("Remove Row (Left)");
+      gridModifyFolder.add(config, "addRowRight").name("Add Row (Right)");
+      gridModifyFolder.add(config, "removeRowRight").name("Remove Row (Right)");
+      gridModifyFolder.add(config, "clearOffsets").name("Clear All Offsets");
+
+      const lineFolder = gui.addFolder("Lines");
+      const lineThicknessControl = lineFolder.add(config, "lineThickness", 1, 10, 1).name("Thickness (mm)");
+      const lineLengthControl = lineFolder.add(config, "lineLength", 1, 100, 1).name("Length (mm)");
+      const spacingControl = lineFolder.add(config, "spacing", 1, 100, 1).name("Spacing (mm)");
+      const paddingControl = lineFolder.add(config, "padding", 0, 100, 1).name("Padding (mm)");
+      const horizontalColorControl = lineFolder.addColor(config, "horizontalColor").name("Horizontal Color");
+      const verticalColorControl = lineFolder.addColor(config, "verticalColor").name("Vertical Color");
+
+      const cornerFolder = gui.addFolder("Corners");
+      const cornerCircleSizeControl = cornerFolder.add(config, "cornerCircleSize", 1, 20, 1).name("Circle Size (mm)");
+      const cornerCircleDistanceControl = cornerFolder.add(config, "cornerCircleDistance", 0, 50, 1).name("Distance from Edge (mm)");
+
+      const dimmedFolder = gui.addFolder("Dimmed");
+      const dimmedOpacityControl = dimmedFolder
+        .add(config, "dimmedOpacity", 0, 1, 0.01)
+        .name("Opacity")
+        .onChange(() => {
+          updateDimmedOpacity();
+        });
+
+      // Function to update all GUI controls
+      function updateAllGUIControls() {
+        rowsControl.updateDisplay();
+        columnsControl.updateDisplay();
+        lockControl.updateDisplay();
+        lineThicknessControl.updateDisplay();
+        lineLengthControl.updateDisplay();
+        spacingControl.updateDisplay();
+        paddingControl.updateDisplay();
+        horizontalColorControl.updateDisplay();
+        verticalColorControl.updateDisplay();
+        cornerCircleSizeControl.updateDisplay();
+        cornerCircleDistanceControl.updateDisplay();
+        dimmedOpacityControl.updateDisplay();
+      }
+
+      const actionsFolder = gui.addFolder("Actions");
+      actionsFolder.add(config, "saveConfig").name("Save Config");
+      actionsFolder.add(config, "loadConfig").name("Load Config");
+      actionsFolder.add(config, "resetSelection").name("Reset Selection");
+      actionsFolder.add(config, "invertSelection").name("Invert Selection");
+      actionsFolder.add(config, "exportSVG").name("Export SVG");
+      actionsFolder.add(config, "copySVG").name("Copy SVG");
+
+      // Track last changed field for lock
+      let lastChangedField = null;
+
+      // Watch for changes
+      gui.onChange(() => {
+        // Handle lock functionality
+        if (config.lockRowsColumns) {
+          if (lastChangedField === "rows") {
+            config.columns = config.rows;
+            columnsControl.updateDisplay();
+          } else if (lastChangedField === "columns") {
+            config.rows = config.columns;
+            rowsControl.updateDisplay();
+          }
+        }
+        generatePattern();
+      });
+
+      // Track which field changed
+      rowsControl.onChange(() => {
+        lastChangedField = "rows";
+      });
+      columnsControl.onChange(() => {
+        lastChangedField = "columns";
+      });
+
+      function generatePattern() {
+        let rows = config.rows;
+        let columns = config.columns;
+
+        // Handle lock
+        if (config.lockRowsColumns) {
+          if (lastChangedField === "rows") {
+            columns = rows;
+            config.columns = columns;
+          } else {
+            rows = columns;
+            config.rows = rows;
+          }
+        }
+
+        // Calculate total grid size - the base grid (rows × columns) plus any additional space
+        // The offsets represent how many rows/columns are added before the base grid
+        const totalRows = rows + rowOffsetTop + rowOffsetBottom;
+        const totalColumns = columns + colOffsetLeft + colOffsetRight;
+
+        const lineThickness = config.lineThickness;
+        const lineLength = config.lineLength;
+        const spacing = config.spacing;
+        const padding = config.padding;
+        const cornerCircleSize = config.cornerCircleSize;
+        const cornerCircleDistance = config.cornerCircleDistance;
+        const horizontalColor = config.horizontalColor;
+        const verticalColor = config.verticalColor;
+
+        const patternWidth = totalColumns * spacing + padding * 2;
+        const patternHeight = totalRows * spacing + padding * 2;
+
+        const viewBoxSize = 1000;
+        const scaleX = viewBoxSize / patternWidth;
+        const scaleY = viewBoxSize / patternHeight;
+        const scale = Math.min(scaleX, scaleY);
+
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("viewBox", `0 0 ${viewBoxSize} ${viewBoxSize}`);
+        svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+        svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+
+        const patternGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        const offsetX = (viewBoxSize - patternWidth * scale) / 2;
+        const offsetY = (viewBoxSize - patternHeight * scale) / 2;
+        patternGroup.setAttribute("transform", `translate(${offsetX}, ${offsetY}) scale(${scale})`);
+        svg.appendChild(patternGroup);
+
+        // Background
+        const background = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        background.setAttribute("width", `${patternWidth}`);
+        background.setAttribute("height", `${patternHeight}`);
+        background.setAttribute("fill", "#ffffff");
+        patternGroup.appendChild(background);
+
+        // Outline
+        const outline = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        outline.setAttribute("x", "0");
+        outline.setAttribute("y", "0");
+        outline.setAttribute("width", `${patternWidth}`);
+        outline.setAttribute("height", `${patternHeight}`);
+        outline.setAttribute("rx", `${cornerCircleSize}`);
+        outline.setAttribute("ry", `${cornerCircleSize}`);
+        outline.setAttribute("fill", "none");
+        outline.setAttribute("stroke", "#333333");
+        outline.setAttribute("stroke-width", "1");
+        patternGroup.appendChild(outline);
+
+        // Visual indicator for the base grid region (the "selected" area)
+        if (rowOffsetTop > 0 || rowOffsetBottom > 0 || colOffsetLeft > 0 || colOffsetRight > 0) {
+          const baseGridX = padding + colOffsetLeft * spacing;
+          const baseGridY = padding + rowOffsetTop * spacing;
+          const baseGridWidth = columns * spacing;
+          const baseGridHeight = rows * spacing;
+
+          const baseGridIndicator = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+          baseGridIndicator.setAttribute("x", `${baseGridX}`);
+          baseGridIndicator.setAttribute("y", `${baseGridY}`);
+          baseGridIndicator.setAttribute("width", `${baseGridWidth}`);
+          baseGridIndicator.setAttribute("height", `${baseGridHeight}`);
+          baseGridIndicator.setAttribute("rx", `${cornerCircleSize}`);
+          baseGridIndicator.setAttribute("ry", `${cornerCircleSize}`);
+          baseGridIndicator.setAttribute("fill", "none");
+          baseGridIndicator.setAttribute("stroke", "#0066ff");
+          baseGridIndicator.setAttribute("stroke-width", "2");
+          baseGridIndicator.setAttribute("stroke-dasharray", "5,5");
+          baseGridIndicator.setAttribute("opacity", "0.6");
+          patternGroup.appendChild(baseGridIndicator);
+        }
+
+        // Clear segment map (but keep states)
+        segmentMap.clear();
+
+        // Generate segments for the ENTIRE total grid
+        for (let row = 0; row < totalRows; row++) {
+          for (let col = 0; col < totalColumns; col++) {
+            // Determine if this segment is in the base grid region
+            const isInBaseGrid = row >= rowOffsetTop && row < rowOffsetTop + rows && col >= colOffsetLeft && col < colOffsetLeft + columns;
+
+            // Use base grid coordinates for segment ID if in base grid, otherwise use absolute coordinates
+            const segmentId = isInBaseGrid ? `segment-${row - rowOffsetTop}-${col - colOffsetLeft}` : `segment-abs-${row}-${col}`;
+
+            const isEven = (row + col) % 2 === 0;
+            const isHorizontal = isEven;
+
+            const x = padding + col * spacing + spacing / 2;
+            const y = padding + row * spacing + spacing / 2;
+
+            const segment = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            segment.setAttribute("data-segment-id", segmentId);
+
+            if (isHorizontal) {
+              segment.setAttribute("x1", `${x - lineLength / 2}`);
+              segment.setAttribute("y1", `${y}`);
+              segment.setAttribute("x2", `${x + lineLength / 2}`);
+              segment.setAttribute("y2", `${y}`);
+              segment.setAttribute("stroke", horizontalColor);
+            } else {
+              segment.setAttribute("x1", `${x}`);
+              segment.setAttribute("y1", `${y - lineLength / 2}`);
+              segment.setAttribute("x2", `${x}`);
+              segment.setAttribute("y2", `${y + lineLength / 2}`);
+              segment.setAttribute("stroke", verticalColor);
             }
 
-            // Calculate dimensions in mm
-            
-            const patternWidth = columns * spacing + padding * 2;
-            const patternHeight = rows * spacing + padding * 2;
-            
-            // Use a fixed viewBox size for consistent visual scaling
-            // This ensures the pattern always fills the container
-            const viewBoxSize = 1000;
-            const scaleX = viewBoxSize / patternWidth;
-            const scaleY = viewBoxSize / patternHeight;
-            const scale = Math.min(scaleX, scaleY); // Maintain aspect ratio
+            // Store original properties
+            segment.setAttribute("data-original-stroke-width", lineThickness);
+            segment.setAttribute("data-original-stroke-color", isHorizontal ? horizontalColor : verticalColor);
+            segment.setAttribute("data-original-x1", isHorizontal ? `${x - lineLength / 2}` : `${x}`);
+            segment.setAttribute("data-original-y1", isHorizontal ? `${y}` : `${y - lineLength / 2}`);
+            segment.setAttribute("data-original-x2", isHorizontal ? `${x + lineLength / 2}` : `${x}`);
+            segment.setAttribute("data-original-y2", isHorizontal ? `${y}` : `${y + lineLength / 2}`);
+            segment.setAttribute("data-is-horizontal", isHorizontal ? "true" : "false");
+            segment.setAttribute("stroke-width", `${lineThickness}`);
+            segment.setAttribute("stroke-linecap", "round");
 
-            // Create SVG - responsive to fit container, but export will use mm
-            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            svg.setAttribute('viewBox', `0 0 ${viewBoxSize} ${viewBoxSize}`);
-            svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-            svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-            
-            // Create a group to scale the pattern to fit the viewBox
-            const patternGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            const offsetX = (viewBoxSize - patternWidth * scale) / 2;
-            const offsetY = (viewBoxSize - patternHeight * scale) / 2;
-            patternGroup.setAttribute('transform', `translate(${offsetX}, ${offsetY}) scale(${scale})`);
-            svg.appendChild(patternGroup);
+            // Apply saved state if exists
+            const savedState = segmentStates.get(segmentId) || "normal";
+            applySegmentState(segmentId, savedState, segment);
 
-            // White background
-            const background = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            background.setAttribute('width', `${patternWidth}`);
-            background.setAttribute('height', `${patternHeight}`);
-            background.setAttribute('fill', '#ffffff');
-            patternGroup.appendChild(background);
-            
-            // SVG outline/border with rounded corners
-            const outline = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            outline.setAttribute('x', '0');
-            outline.setAttribute('y', '0');
-            outline.setAttribute('width', `${patternWidth}`);
-            outline.setAttribute('height', `${patternHeight}`);
-            outline.setAttribute('rx', `${cornerCircleSize}`);
-            outline.setAttribute('ry', `${cornerCircleSize}`);
-            outline.setAttribute('fill', 'none');
-            outline.setAttribute('stroke', '#333333');
-            outline.setAttribute('stroke-width', '1');
-            patternGroup.appendChild(outline);
-
-            // Generate segments
-            for (let row = 0; row < rows; row++) {
-                for (let col = 0; col < columns; col++) {
-                    const isEven = (row + col) % 2 === 0;
-                    const isHorizontal = isEven;
-                    
-                    const x = padding + col * spacing + spacing / 2;
-                    const y = padding + row * spacing + spacing / 2;
-                    
-                    const segment = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                    
-                    if (isHorizontal) {
-                        // Horizontal segment
-                        segment.setAttribute('x1', `${x - lineLength / 2}`);
-                        segment.setAttribute('y1', `${y}`);
-                        segment.setAttribute('x2', `${x + lineLength / 2}`);
-                        segment.setAttribute('y2', `${y}`);
-                        segment.setAttribute('stroke', horizontalColor);
-                    } else {
-                        // Vertical segment
-                        segment.setAttribute('x1', `${x}`);
-                        segment.setAttribute('y1', `${y - lineLength / 2}`);
-                        segment.setAttribute('x2', `${x}`);
-                        segment.setAttribute('y2', `${y + lineLength / 2}`);
-                        segment.setAttribute('stroke', verticalColor);
-                    }
-                    
-                    segment.setAttribute('stroke-width', `${lineThickness}`);
-                    segment.setAttribute('stroke-linecap', 'round');
-                    patternGroup.appendChild(segment);
-                }
+            // Apply dimmed state if exists
+            if (dimmedSegments.has(segmentId)) {
+              segment.classList.add("segment-dimmed");
+              segment.style.opacity = config.dimmedOpacity;
             }
 
-            // Add corner circles - positioned relative to canvas outline (which is at 0,0)
-            const corners = [
-                { x: cornerCircleDistance, y: cornerCircleDistance }, // Top-left
-                { x: patternWidth - cornerCircleDistance, y: cornerCircleDistance }, // Top-right
-                { x: cornerCircleDistance, y: patternHeight - cornerCircleDistance }, // Bottom-left
-                { x: patternWidth - cornerCircleDistance, y: patternHeight - cornerCircleDistance } // Bottom-right
-            ];
-
-            corners.forEach(corner => {
-                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                circle.setAttribute('cx', `${corner.x}`);
-                circle.setAttribute('cy', `${corner.y}`);
-                circle.setAttribute('r', `${cornerCircleSize}`);
-                circle.setAttribute('fill', 'none');
-                circle.setAttribute('stroke', '#000000');
-                circle.setAttribute('stroke-width', '1');
-                patternGroup.appendChild(circle);
+            // Add click handler - regular click cycles, cmd+click toggles dimmed
+            segment.addEventListener("click", (e) => {
+              e.preventDefault();
+              if (e.metaKey) {
+                // Command+click: toggle dimmed outline
+                toggleDimmedState(segmentId);
+              } else {
+                // Regular click: cycle through normal -> partial-top -> partial-bottom -> normal
+                toggleSegment(segmentId);
+              }
             });
 
-
-            // Update preview
-            const preview = document.getElementById('preview');
-            preview.innerHTML = '';
-            preview.appendChild(svg);
-            
-            // Update dimensions display
-            document.getElementById('canvasWidth').textContent = patternWidth;
-            document.getElementById('canvasHeight').textContent = patternHeight;
-
-            // Store current SVG for download/copy
-            currentSVG = svg;
+            patternGroup.appendChild(segment);
+            segmentMap.set(segmentId, { element: segment, row, col });
+          }
         }
 
-        function downloadSVG() {
-            if (!currentSVG) {
-                alert('Please generate a pattern first!');
-                return;
-            }
+        // Corner circles
+        const corners = [
+          { x: cornerCircleDistance, y: cornerCircleDistance },
+          { x: patternWidth - cornerCircleDistance, y: cornerCircleDistance },
+          { x: cornerCircleDistance, y: patternHeight - cornerCircleDistance },
+          { x: patternWidth - cornerCircleDistance, y: patternHeight - cornerCircleDistance },
+        ];
 
-            // Clone the SVG and add mm dimensions for export
-            // We need to extract the actual pattern dimensions from the group
-            const exportSvg = currentSVG.cloneNode(true);
-            const patternGroup = exportSvg.querySelector('g');
-            if (patternGroup) {
-                // Get the actual pattern dimensions from the background rect
-                const background = patternGroup.querySelector('rect');
-                if (background) {
-                    const width = parseFloat(background.getAttribute('width'));
-                    const height = parseFloat(background.getAttribute('height'));
-                    exportSvg.setAttribute('width', `${width}mm`);
-                    exportSvg.setAttribute('height', `${height}mm`);
-                    exportSvg.setAttribute('viewBox', `0 0 ${width} ${height}`);
-                    
-                    // Remove the transform group and flatten the structure for export
-                    const children = Array.from(patternGroup.children);
-                    patternGroup.remove();
-                    children.forEach(child => exportSvg.appendChild(child));
-                }
-            }
+        corners.forEach((corner) => {
+          const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          circle.setAttribute("cx", `${corner.x}`);
+          circle.setAttribute("cy", `${corner.y}`);
+          circle.setAttribute("r", `${cornerCircleSize}`);
+          circle.setAttribute("fill", "none");
+          circle.setAttribute("stroke", "#000000");
+          circle.setAttribute("stroke-width", "1");
+          patternGroup.appendChild(circle);
+        });
 
-            const serializer = new XMLSerializer();
-            const svgString = serializer.serializeToString(exportSvg);
-            const blob = new Blob([svgString], { type: 'image/svg+xml' });
-            const url = URL.createObjectURL(blob);
-            
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `grid-pattern-${Date.now()}.svg`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
+        const preview = document.getElementById("preview");
+        preview.innerHTML = "";
+        preview.appendChild(svg);
+
+        document.getElementById("canvasWidth").textContent = patternWidth;
+        document.getElementById("canvasHeight").textContent = patternHeight;
+
+        currentSVG = svg;
+      }
+
+      function applySegmentState(segmentId, state, element = null) {
+        const segment = segmentMap.get(segmentId);
+        if (!segment && !element) return;
+
+        const segElement = element || segment.element;
+        if (!segElement) return;
+
+        const originalWidth = segElement.getAttribute("data-original-stroke-width");
+        const originalColor = segElement.getAttribute("data-original-stroke-color");
+        const isHorizontal = segElement.getAttribute("data-is-horizontal") === "true";
+        const origX1 = segElement.getAttribute("data-original-x1");
+        const origY1 = segElement.getAttribute("data-original-y1");
+        const origX2 = segElement.getAttribute("data-original-x2");
+        const origY2 = segElement.getAttribute("data-original-y2");
+
+        // Remove all state classes
+        segElement.classList.remove("segment-dimmed-outline", "segment-partial");
+
+        if (state === "normal") {
+          // Normal state: restore original appearance
+          segElement.setAttribute("stroke", originalColor);
+          segElement.setAttribute("stroke-width", originalWidth);
+          segElement.setAttribute("x1", origX1);
+          segElement.setAttribute("y1", origY1);
+          segElement.setAttribute("x2", origX2);
+          segElement.setAttribute("y2", origY2);
+        } else if (state === "dimmed-outline") {
+          // Dimmed outline state: thin black outline
+          segElement.classList.add("segment-dimmed-outline");
+          segElement.setAttribute("stroke", "#000000");
+          segElement.setAttribute("stroke-width", "1");
+          segElement.setAttribute("x1", origX1);
+          segElement.setAttribute("y1", origY1);
+          segElement.setAttribute("x2", origX2);
+          segElement.setAttribute("y2", origY2);
+        } else if (state === "partial-top") {
+          // Partial top state: show top/left half
+          segElement.classList.add("segment-partial");
+          segElement.setAttribute("stroke", originalColor);
+          segElement.setAttribute("stroke-width", originalWidth);
+
+          if (isHorizontal) {
+            // Horizontal: show left half
+            const midX = (parseFloat(origX1) + parseFloat(origX2)) / 2;
+            segElement.setAttribute("x1", origX1);
+            segElement.setAttribute("y1", origY1);
+            segElement.setAttribute("x2", `${midX}`);
+            segElement.setAttribute("y2", origY2);
+          } else {
+            // Vertical: show top half
+            const midY = (parseFloat(origY1) + parseFloat(origY2)) / 2;
+            segElement.setAttribute("x1", origX1);
+            segElement.setAttribute("y1", origY1);
+            segElement.setAttribute("x2", origX2);
+            segElement.setAttribute("y2", `${midY}`);
+          }
+        } else if (state === "partial-bottom") {
+          // Partial bottom state: show bottom/right half
+          segElement.classList.add("segment-partial");
+          segElement.setAttribute("stroke", originalColor);
+          segElement.setAttribute("stroke-width", originalWidth);
+
+          if (isHorizontal) {
+            // Horizontal: show right half
+            const midX = (parseFloat(origX1) + parseFloat(origX2)) / 2;
+            segElement.setAttribute("x1", `${midX}`);
+            segElement.setAttribute("y1", origY1);
+            segElement.setAttribute("x2", origX2);
+            segElement.setAttribute("y2", origY2);
+          } else {
+            // Vertical: show bottom half
+            const midY = (parseFloat(origY1) + parseFloat(origY2)) / 2;
+            segElement.setAttribute("x1", origX1);
+            segElement.setAttribute("y1", `${midY}`);
+            segElement.setAttribute("x2", origX2);
+            segElement.setAttribute("y2", origY2);
+          }
+        }
+      }
+
+      function toggleSegment(segmentId) {
+        const currentState = segmentStates.get(segmentId) || "normal";
+        let nextState;
+
+        // Cycle through states: normal -> partial-top -> partial-bottom -> normal
+        // (dimmed-outline is separate, toggled with ctrl+click)
+        if (currentState === "normal") {
+          nextState = "partial-top";
+        } else if (currentState === "partial-top") {
+          nextState = "partial-bottom";
+        } else if (currentState === "partial-bottom") {
+          nextState = "normal";
+        } else {
+          // If in dimmed-outline state, cycle to partial-top
+          nextState = "partial-top";
         }
 
-        function copySVG() {
-            if (!currentSVG) {
-                alert('Please generate a pattern first!');
-                return;
-            }
+        segmentStates.set(segmentId, nextState);
+        applySegmentState(segmentId, nextState);
+      }
 
-            // Clone the SVG and add mm dimensions for export
-            // We need to extract the actual pattern dimensions from the group
-            const exportSvg = currentSVG.cloneNode(true);
-            const patternGroup = exportSvg.querySelector('g');
-            if (patternGroup) {
-                // Get the actual pattern dimensions from the background rect
-                const background = patternGroup.querySelector('rect');
-                if (background) {
-                    const width = parseFloat(background.getAttribute('width'));
-                    const height = parseFloat(background.getAttribute('height'));
-                    exportSvg.setAttribute('width', `${width}mm`);
-                    exportSvg.setAttribute('height', `${height}mm`);
-                    exportSvg.setAttribute('viewBox', `0 0 ${width} ${height}`);
-                    
-                    // Remove the transform group and flatten the structure for export
-                    const children = Array.from(patternGroup.children);
-                    patternGroup.remove();
-                    children.forEach(child => exportSvg.appendChild(child));
-                }
-            }
+      function toggleDimmedState(segmentId) {
+        const segment = segmentMap.get(segmentId);
+        if (!segment) return;
 
-            const serializer = new XMLSerializer();
-            const svgString = serializer.serializeToString(exportSvg);
-            
-            navigator.clipboard.writeText(svgString).then(() => {
-                alert('SVG code copied to clipboard!');
-            }).catch(err => {
-                console.error('Failed to copy:', err);
-                alert('Failed to copy to clipboard. Please try downloading instead.');
-            });
+        if (dimmedSegments.has(segmentId)) {
+          // Remove dimmed state
+          dimmedSegments.delete(segmentId);
+          segment.element.classList.remove("segment-dimmed");
+          segment.element.style.opacity = "";
+        } else {
+          // Add dimmed state
+          dimmedSegments.add(segmentId);
+          segment.element.classList.add("segment-dimmed");
+          segment.element.style.opacity = config.dimmedOpacity;
+        }
+      }
+
+      function updateDimmedOpacity() {
+        // Update opacity for all currently dimmed segments
+        dimmedSegments.forEach((segmentId) => {
+          const segment = segmentMap.get(segmentId);
+          if (segment && segment.element) {
+            segment.element.style.opacity = config.dimmedOpacity;
+          }
+        });
+      }
+
+      function downloadSVG() {
+        if (!currentSVG) {
+          alert("Please generate a pattern first!");
+          return;
         }
 
-        // Generate pattern on page load
-        window.addEventListener('DOMContentLoaded', () => {
-            generatePattern();
-        });
+        const exportSvg = currentSVG.cloneNode(true);
+        const patternGroup = exportSvg.querySelector("g");
 
-        // Auto-generate on input change
-        const inputs = ['rows', 'columns', 'lineThickness', 'lineLength', 'spacing', 'cornerCircleSize', 'cornerCircleDistance', 'padding'];
-        inputs.forEach(id => {
-            const input = document.getElementById(id);
-            input.addEventListener('input', generatePattern);
-            input.addEventListener('change', generatePattern);
-            input.addEventListener('blur', generatePattern);
-        });
-        
-        // Lock checkbox
-        document.getElementById('lockRowsColumns').addEventListener('change', function() {
-            if (this.checked) {
-                // When locking, sync them to the current rows value
-                const rows = parseInt(document.getElementById('rows').value) || 16;
-                document.getElementById('columns').value = rows;
-                document.getElementById('rows').dataset.lastValue = rows;
-                document.getElementById('columns').dataset.lastValue = rows;
+        if (patternGroup) {
+          // Keep dimmed segments but ensure opacity is set as SVG attribute
+          const segments = patternGroup.querySelectorAll("line[data-segment-id]");
+          segments.forEach((segment) => {
+            const segmentId = segment.getAttribute("data-segment-id");
+            if (dimmedSegments.has(segmentId)) {
+              // Convert inline style opacity to SVG opacity attribute for export
+              const opacity = segment.style.opacity || config.dimmedOpacity;
+              segment.setAttribute("opacity", opacity);
+              segment.style.opacity = ""; // Clear inline style to avoid duplication
             }
-            generatePattern();
-        });
-        
-        document.getElementById('horizontalColor').addEventListener('input', generatePattern);
-        document.getElementById('verticalColor').addEventListener('input', generatePattern);
+          });
+
+          const background = patternGroup.querySelector("rect");
+          if (background) {
+            const width = parseFloat(background.getAttribute("width"));
+            const height = parseFloat(background.getAttribute("height"));
+            exportSvg.setAttribute("width", `${width}mm`);
+            exportSvg.setAttribute("height", `${height}mm`);
+            exportSvg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+
+            const children = Array.from(patternGroup.children);
+            patternGroup.remove();
+            children.forEach((child) => exportSvg.appendChild(child));
+          }
+        }
+
+        const serializer = new XMLSerializer();
+        const svgString = serializer.serializeToString(exportSvg);
+        const blob = new Blob([svgString], { type: "image/svg+xml" });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `grid-pattern-${Date.now()}.svg`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
+
+      function copySVG() {
+        if (!currentSVG) {
+          alert("Please generate a pattern first!");
+          return;
+        }
+
+        const exportSvg = currentSVG.cloneNode(true);
+        const patternGroup = exportSvg.querySelector("g");
+
+        if (patternGroup) {
+          // Keep dimmed segments but ensure opacity is set as SVG attribute
+          const segments = patternGroup.querySelectorAll("line[data-segment-id]");
+          segments.forEach((segment) => {
+            const segmentId = segment.getAttribute("data-segment-id");
+            if (dimmedSegments.has(segmentId)) {
+              // Convert inline style opacity to SVG opacity attribute for export
+              const opacity = segment.style.opacity || config.dimmedOpacity;
+              segment.setAttribute("opacity", opacity);
+              segment.style.opacity = ""; // Clear inline style to avoid duplication
+            }
+          });
+
+          const background = patternGroup.querySelector("rect");
+          if (background) {
+            const width = parseFloat(background.getAttribute("width"));
+            const height = parseFloat(background.getAttribute("height"));
+            exportSvg.setAttribute("width", `${width}mm`);
+            exportSvg.setAttribute("height", `${height}mm`);
+            exportSvg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+
+            const children = Array.from(patternGroup.children);
+            patternGroup.remove();
+            children.forEach((child) => exportSvg.appendChild(child));
+          }
+        }
+
+        const serializer = new XMLSerializer();
+        const svgString = serializer.serializeToString(exportSvg);
+
+        navigator.clipboard
+          .writeText(svgString)
+          .then(() => {
+            alert("SVG code copied to clipboard!");
+          })
+          .catch((err) => {
+            console.error("Failed to copy:", err);
+            alert("Failed to copy to clipboard. Please try downloading instead.");
+          });
+      }
+
+      // Load config on page load
+      window.addEventListener("DOMContentLoaded", () => {
+        const saved = localStorage.getItem("gridPatternConfig");
+        if (saved) {
+          try {
+            const data = JSON.parse(saved);
+            Object.assign(config, data);
+            if (data.segmentStates) {
+              segmentStates = new Map(Object.entries(data.segmentStates));
+            } else if (data.hiddenSegments) {
+              // Legacy support: convert old hiddenSegments to new format
+              segmentStates = new Map();
+              data.hiddenSegments.forEach((id) => {
+                segmentStates.set(id, "dimmed-outline");
+              });
+            }
+            if (data.dimmedSegments) {
+              dimmedSegments = new Set(data.dimmedSegments);
+            }
+            if (data.rowOffsetTop !== undefined) rowOffsetTop = data.rowOffsetTop;
+            if (data.rowOffsetBottom !== undefined) rowOffsetBottom = data.rowOffsetBottom;
+            if (data.colOffsetLeft !== undefined) colOffsetLeft = data.colOffsetLeft;
+            if (data.colOffsetRight !== undefined) colOffsetRight = data.colOffsetRight;
+            if (data.selectedRegion) selectedRegion = data.selectedRegion;
+            updateAllGUIControls();
+          } catch (e) {
+            console.error("Failed to load config:", e);
+          }
+        }
+        generatePattern();
+        // Update dimmed opacity for loaded dimmed segments (after pattern is generated)
+        updateDimmedOpacity();
+      });
     </script>
-</body>
+  </body>
 </html>
-
