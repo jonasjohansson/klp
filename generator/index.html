@@ -466,6 +466,39 @@
             const x = padding + col * spacing + spacing / 2;
             const y = padding + row * spacing + spacing / 2;
 
+            // Create an invisible hit box rectangle for easier clicking
+            const hitBoxPadding = 15; // Padding around the line for larger hit area
+            const hitBox = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            hitBox.setAttribute("data-segment-id", segmentId);
+            
+            if (isHorizontal) {
+              // Horizontal line: wider and taller hit box
+              hitBox.setAttribute("x", `${x - lineLength / 2 - hitBoxPadding}`);
+              hitBox.setAttribute("y", `${y - hitBoxPadding}`);
+              hitBox.setAttribute("width", `${lineLength + hitBoxPadding * 2}`);
+              hitBox.setAttribute("height", `${hitBoxPadding * 2}`);
+            } else {
+              // Vertical line: taller and wider hit box
+              hitBox.setAttribute("x", `${x - hitBoxPadding}`);
+              hitBox.setAttribute("y", `${y - lineLength / 2 - hitBoxPadding}`);
+              hitBox.setAttribute("width", `${hitBoxPadding * 2}`);
+              hitBox.setAttribute("height", `${lineLength + hitBoxPadding * 2}`);
+            }
+            
+            hitBox.setAttribute("fill", "transparent");
+            hitBox.setAttribute("stroke", "none");
+            hitBox.style.cursor = "pointer";
+            
+            // Add click handler to hit box
+            hitBox.addEventListener("click", (e) => {
+              e.preventDefault();
+              if (e.metaKey) {
+                toggleDimmedState(segmentId);
+              } else {
+                toggleSegment(segmentId);
+              }
+            });
+
             const segment = document.createElementNS("http://www.w3.org/2000/svg", "line");
             segment.setAttribute("data-segment-id", segmentId);
 
@@ -505,6 +538,7 @@
             }
 
             // Add click handler - regular click cycles, cmd+click toggles dimmed
+            // (Note: hit box also has click handler, but keeping this for direct line clicks)
             segment.addEventListener("click", (e) => {
               e.preventDefault();
               if (e.metaKey) {
@@ -516,6 +550,8 @@
               }
             });
 
+            // Append hit box first (behind the line), then the line
+            patternGroup.appendChild(hitBox);
             patternGroup.appendChild(segment);
             segmentMap.set(segmentId, { element: segment, row, col });
           }
