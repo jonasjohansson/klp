@@ -34,14 +34,14 @@ AFRAME.registerComponent("focal-changer", {
 // Always look at component for camera
 AFRAME.registerComponent("always-look-at", {
   schema: { type: "selector" },
+  init: function () {
+    this.targetPos = new THREE.Vector3();
+  },
   tick: function () {
     var targetEl = this.data;
     if (!targetEl) return;
-    var targetPos = new THREE.Vector3();
-    targetEl.object3D.getWorldPosition(targetPos);
-    // Make the entity's -Z axis point at the target.
-    this.el.object3D.lookAt(targetPos);
-    // If your object appears inverted, you may need the following:
+    targetEl.object3D.getWorldPosition(this.targetPos);
+    this.el.object3D.lookAt(this.targetPos);
     this.el.object3D.rotateY(Math.PI);
   },
 });

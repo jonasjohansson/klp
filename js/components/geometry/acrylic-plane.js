@@ -48,7 +48,7 @@ export function registerAcrylicPlane() {
       this.setupEnvironmentMap(material);
 
       // Create the mesh with the geometry from createGeometry
-      const geometry = this.el.object3DMap.mesh ? this.el.object3DMap.mesh.geometry : new THREE.BoxGeometry(6.0, 6.0, 0.08);
+      const geometry = this.el.object3DMap.mesh ? this.el.object3DMap.mesh.geometry : new THREE.BoxGeometry(3.40157, 3.40157, 0.06);
       const mesh = new THREE.Mesh(geometry, material);
       this.el.setObject3D("mesh", mesh);
 
@@ -56,9 +56,9 @@ export function registerAcrylicPlane() {
     },
 
     createGeometry: function () {
-      // Get scale from parent entities to match SVG size
-      let scaleX = 5.0; // Double width again (3.0 * 2)
-      let scaleY = 5.0; // Double height again (3.0 * 2)
+      // Match the SVG outer bounds (3401.57 * 0.001 = 3.40157)
+      let scaleX = 3.40157;
+      let scaleY = 3.40157;
 
       let currentParent = this.el.parentElement;
       while (currentParent) {
@@ -80,8 +80,8 @@ export function registerAcrylicPlane() {
         currentParent = currentParent.parentElement;
       }
 
-      // Make thickness double again (0.04 * 2 = 0.08)
-      const thickness = 0.08;
+      // Thickness reduced by 40% (0.1 * 0.6 = 0.06)
+      const thickness = 0.06;
       const geometry = new THREE.BoxGeometry(scaleX, scaleY, thickness);
 
       // Update the mesh if it exists

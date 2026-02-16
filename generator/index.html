@@ -102,15 +102,6 @@
       let segmentStates = new Map(); // Map of segmentId -> state
       let dimmedSegments = new Set(); // Set of dimmed segment IDs (independent of other states)
 
-      // Grid offset tracking: how many rows/columns added to top/left
-      let rowOffsetTop = 0; // Rows added to top
-      let rowOffsetBottom = 0; // Rows added to bottom (calculated)
-      let colOffsetLeft = 0; // Columns added to left
-      let colOffsetRight = 0; // Columns added to right (calculated)
-
-      // Selected region tracking
-      let selectedRegion = null; // {startRow, endRow, startCol, endCol} in absolute grid coordinates
-
       // Configuration object
       const config = {
         rows: 16,
@@ -122,65 +113,11 @@
         padding: 30,
         horizontalColor: "#ff69b4",
         verticalColor: "#ff0000",
-        cornerCircleSize: 6,
+        showCornerCircles: true,
+        cornerCircleSize: 25,
         cornerCircleDistance: 20,
+        roundedCorners: 6,
         dimmedOpacity: 0.3,
-        addColumnTop: () => {
-          colOffsetLeft++;
-          generatePattern();
-          updateAllGUIControls();
-        },
-        addColumnBottom: () => {
-          colOffsetRight++;
-          generatePattern();
-          updateAllGUIControls();
-        },
-        removeColumnTop: () => {
-          if (colOffsetLeft > 0) {
-            colOffsetLeft--;
-            generatePattern();
-            updateAllGUIControls();
-          }
-        },
-        removeColumnBottom: () => {
-          if (colOffsetRight > 0) {
-            colOffsetRight--;
-            generatePattern();
-            updateAllGUIControls();
-          }
-        },
-        addRowLeft: () => {
-          rowOffsetTop++;
-          generatePattern();
-          updateAllGUIControls();
-        },
-        addRowRight: () => {
-          rowOffsetBottom++;
-          generatePattern();
-          updateAllGUIControls();
-        },
-        removeRowLeft: () => {
-          if (rowOffsetTop > 0) {
-            rowOffsetTop--;
-            generatePattern();
-            updateAllGUIControls();
-          }
-        },
-        removeRowRight: () => {
-          if (rowOffsetBottom > 0) {
-            rowOffsetBottom--;
-            generatePattern();
-            updateAllGUIControls();
-          }
-        },
-        clearOffsets: () => {
-          rowOffsetTop = 0;
-          rowOffsetBottom = 0;
-          colOffsetLeft = 0;
-          colOffsetRight = 0;
-          generatePattern();
-          updateAllGUIControls();
-        },
         invertSelection: () => {
           // Invert dimmed state: dim all non-dimmed segments, and un-dim all dimmed segments
           segmentMap.forEach((segment, segmentId) => {
@@ -209,14 +146,11 @@
             padding: config.padding,
             horizontalColor: config.horizontalColor,
             verticalColor: config.verticalColor,
+            showCornerCircles: config.showCornerCircles,
             cornerCircleSize: config.cornerCircleSize,
             cornerCircleDistance: config.cornerCircleDistance,
+            roundedCorners: config.roundedCorners,
             dimmedOpacity: config.dimmedOpacity,
-            rowOffsetTop: rowOffsetTop,
-            rowOffsetBottom: rowOffsetBottom,
-            colOffsetLeft: colOffsetLeft,
-            colOffsetRight: colOffsetRight,
-            selectedRegion: selectedRegion,
             segmentStates: Object.fromEntries(segmentStates),
             dimmedSegments: Array.from(dimmedSegments),
           };
@@ -241,11 +175,6 @@
               if (data.dimmedSegments) {
                 dimmedSegments = new Set(data.dimmedSegments);
               }
-              if (data.rowOffsetTop !== undefined) rowOffsetTop = data.rowOffsetTop;
-              if (data.rowOffsetBottom !== undefined) rowOffsetBottom = data.rowOffsetBottom;
-              if (data.colOffsetLeft !== undefined) colOffsetLeft = data.colOffsetLeft;
-              if (data.colOffsetRight !== undefined) colOffsetRight = data.colOffsetRight;
-              if (data.selectedRegion) selectedRegion = data.selectedRegion;
               updateAllGUIControls();
               generatePattern();
               // Update dimmed opacity for loaded dimmed segments (after pattern is generated)
@@ -277,28 +206,19 @@
       const columnsControl = gridFolder.add(config, "columns", 1, 100, 1).name("Columns");
       const lockControl = gridFolder.add(config, "lockRowsColumns").name("Lock Rows/Columns");
 
-      const gridModifyFolder = gridFolder.addFolder("Modify Grid");
-      gridModifyFolder.add(config, "addColumnTop").name("Add Column (Top)");
-      gridModifyFolder.add(config, "removeColumnTop").name("Remove Column (Top)");
-      gridModifyFolder.add(config, "addColumnBottom").name("Add Column (Bottom)");
-      gridModifyFolder.add(config, "removeColumnBottom").name("Remove Column (Bottom)");
-      gridModifyFolder.add(config, "addRowLeft").name("Add Row (Left)");
-      gridModifyFolder.add(config, "removeRowLeft").name("Remove Row (Left)");
-      gridModifyFolder.add(config, "addRowRight").name("Add Row (Right)");
-      gridModifyFolder.add(config, "removeRowRight").name("Remove Row (Right)");
-      gridModifyFolder.add(config, "clearOffsets").name("Clear All Offsets");
-
       const lineFolder = gui.addFolder("Lines");
-      const lineThicknessControl = lineFolder.add(config, "lineThickness", 1, 10, 1).name("Thickness (mm)");
-      const lineLengthControl = lineFolder.add(config, "lineLength", 1, 100, 1).name("Length (mm)");
-      const spacingControl = lineFolder.add(config, "spacing", 1, 100, 1).name("Spacing (mm)");
-      const paddingControl = lineFolder.add(config, "padding", 0, 100, 1).name("Padding (mm)");
+      const lineThicknessControl = lineFolder.add(config, "lineThickness", 1, 10, 0.5).name("Thickness (mm)");
+      const lineLengthControl = lineFolder.add(config, "lineLength", 1, 100, 0.5).name("Length (mm)");
+      const spacingControl = lineFolder.add(config, "spacing", 1, 100, 0.5).name("Spacing (mm)");
+      const paddingControl = lineFolder.add(config, "padding", 0, 100, 0.5).name("Padding (mm)");
       const horizontalColorControl = lineFolder.addColor(config, "horizontalColor").name("Horizontal Color");
       const verticalColorControl = lineFolder.addColor(config, "verticalColor").name("Vertical Color");
 
       const cornerFolder = gui.addFolder("Corners");
-      const cornerCircleSizeControl = cornerFolder.add(config, "cornerCircleSize", 1, 20, 1).name("Circle Size (mm)");
-      const cornerCircleDistanceControl = cornerFolder.add(config, "cornerCircleDistance", 0, 50, 1).name("Distance from Edge (mm)");
+      const roundedCornersControl = cornerFolder.add(config, "roundedCorners", 0, 50, 1).name("Rounded Corner Radius (mm)");
+      const showCornerCirclesControl = cornerFolder.add(config, "showCornerCircles").name("Show Corner Circles");
+      const cornerCircleSizeControl = cornerFolder.add(config, "cornerCircleSize", 1, 50, 1).name("Corner Circle Size (mm)");
+      const cornerCircleDistanceControl = cornerFolder.add(config, "cornerCircleDistance", 0, 50, 1).name("Circle Distance from Edge (mm)");
 
       const dimmedFolder = gui.addFolder("Dimmed");
       const dimmedOpacityControl = dimmedFolder
@@ -319,6 +239,8 @@
         paddingControl.updateDisplay();
         horizontalColorControl.updateDisplay();
         verticalColorControl.updateDisplay();
+        roundedCornersControl.updateDisplay();
+        showCornerCirclesControl.updateDisplay();
         cornerCircleSizeControl.updateDisplay();
         cornerCircleDistanceControl.updateDisplay();
         dimmedOpacityControl.updateDisplay();
@@ -373,17 +295,18 @@
           }
         }
 
-        // Calculate total grid size - the base grid (rows × columns) plus any additional space
-        // The offsets represent how many rows/columns are added before the base grid
-        const totalRows = rows + rowOffsetTop + rowOffsetBottom;
-        const totalColumns = columns + colOffsetLeft + colOffsetRight;
+        // Calculate total grid size
+        const totalRows = rows;
+        const totalColumns = columns;
 
         const lineThickness = config.lineThickness;
         const lineLength = config.lineLength;
         const spacing = config.spacing;
         const padding = config.padding;
+        const showCornerCircles = config.showCornerCircles;
         const cornerCircleSize = config.cornerCircleSize;
         const cornerCircleDistance = config.cornerCircleDistance;
+        const roundedCorners = config.roundedCorners;
         const horizontalColor = config.horizontalColor;
         const verticalColor = config.verticalColor;
 
@@ -419,46 +342,20 @@
         outline.setAttribute("y", "0");
         outline.setAttribute("width", `${patternWidth}`);
         outline.setAttribute("height", `${patternHeight}`);
-        outline.setAttribute("rx", `${cornerCircleSize}`);
-        outline.setAttribute("ry", `${cornerCircleSize}`);
+        outline.setAttribute("rx", `${roundedCorners}`);
+        outline.setAttribute("ry", `${roundedCorners}`);
         outline.setAttribute("fill", "none");
         outline.setAttribute("stroke", "#333333");
         outline.setAttribute("stroke-width", "1");
         patternGroup.appendChild(outline);
 
-        // Visual indicator for the base grid region (the "selected" area)
-        if (rowOffsetTop > 0 || rowOffsetBottom > 0 || colOffsetLeft > 0 || colOffsetRight > 0) {
-          const baseGridX = padding + colOffsetLeft * spacing;
-          const baseGridY = padding + rowOffsetTop * spacing;
-          const baseGridWidth = columns * spacing;
-          const baseGridHeight = rows * spacing;
-
-          const baseGridIndicator = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-          baseGridIndicator.setAttribute("x", `${baseGridX}`);
-          baseGridIndicator.setAttribute("y", `${baseGridY}`);
-          baseGridIndicator.setAttribute("width", `${baseGridWidth}`);
-          baseGridIndicator.setAttribute("height", `${baseGridHeight}`);
-          baseGridIndicator.setAttribute("rx", `${cornerCircleSize}`);
-          baseGridIndicator.setAttribute("ry", `${cornerCircleSize}`);
-          baseGridIndicator.setAttribute("fill", "none");
-          baseGridIndicator.setAttribute("stroke", "#0066ff");
-          baseGridIndicator.setAttribute("stroke-width", "2");
-          baseGridIndicator.setAttribute("stroke-dasharray", "5,5");
-          baseGridIndicator.setAttribute("opacity", "0.6");
-          patternGroup.appendChild(baseGridIndicator);
-        }
-
         // Clear segment map (but keep states)
         segmentMap.clear();
 
-        // Generate segments for the ENTIRE total grid
+        // Generate segments for the grid
         for (let row = 0; row < totalRows; row++) {
           for (let col = 0; col < totalColumns; col++) {
-            // Determine if this segment is in the base grid region
-            const isInBaseGrid = row >= rowOffsetTop && row < rowOffsetTop + rows && col >= colOffsetLeft && col < colOffsetLeft + columns;
-
-            // Use base grid coordinates for segment ID if in base grid, otherwise use absolute coordinates
-            const segmentId = isInBaseGrid ? `segment-${row - rowOffsetTop}-${col - colOffsetLeft}` : `segment-abs-${row}-${col}`;
+            const segmentId = `segment-${row}-${col}`;
 
             const isEven = (row + col) % 2 === 0;
             const isHorizontal = isEven;
@@ -557,24 +454,26 @@
           }
         }
 
-        // Corner circles
-        const corners = [
-          { x: cornerCircleDistance, y: cornerCircleDistance },
-          { x: patternWidth - cornerCircleDistance, y: cornerCircleDistance },
-          { x: cornerCircleDistance, y: patternHeight - cornerCircleDistance },
-          { x: patternWidth - cornerCircleDistance, y: patternHeight - cornerCircleDistance },
-        ];
+        // Corner circles (only if enabled)
+        if (showCornerCircles) {
+          const corners = [
+            { x: cornerCircleDistance, y: cornerCircleDistance },
+            { x: patternWidth - cornerCircleDistance, y: cornerCircleDistance },
+            { x: cornerCircleDistance, y: patternHeight - cornerCircleDistance },
+            { x: patternWidth - cornerCircleDistance, y: patternHeight - cornerCircleDistance },
+          ];
 
-        corners.forEach((corner) => {
-          const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-          circle.setAttribute("cx", `${corner.x}`);
-          circle.setAttribute("cy", `${corner.y}`);
-          circle.setAttribute("r", `${cornerCircleSize}`);
-          circle.setAttribute("fill", "none");
-          circle.setAttribute("stroke", "#000000");
-          circle.setAttribute("stroke-width", "1");
-          patternGroup.appendChild(circle);
-        });
+          corners.forEach((corner) => {
+            const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circle.setAttribute("cx", `${corner.x}`);
+            circle.setAttribute("cy", `${corner.y}`);
+            circle.setAttribute("r", `${cornerCircleSize}`);
+            circle.setAttribute("fill", "none");
+            circle.setAttribute("stroke", "#000000");
+            circle.setAttribute("stroke-width", "1");
+            patternGroup.appendChild(circle);
+          });
+        }
 
         const preview = document.getElementById("preview");
         preview.innerHTML = "";
@@ -724,15 +623,19 @@
         const patternGroup = exportSvg.querySelector("g");
 
         if (patternGroup) {
-          // Keep dimmed segments but ensure opacity is set as SVG attribute
+          // Remove all hit area rectangles (invisible click targets)
+          const hitBoxes = patternGroup.querySelectorAll("rect[data-segment-id]");
+          hitBoxes.forEach((hitBox) => hitBox.remove());
+
+          // Remove dimmed segments and segments with partial/dimmed-outline states
           const segments = patternGroup.querySelectorAll("line[data-segment-id]");
           segments.forEach((segment) => {
             const segmentId = segment.getAttribute("data-segment-id");
-            if (dimmedSegments.has(segmentId)) {
-              // Convert inline style opacity to SVG opacity attribute for export
-              const opacity = segment.style.opacity || config.dimmedOpacity;
-              segment.setAttribute("opacity", opacity);
-              segment.style.opacity = ""; // Clear inline style to avoid duplication
+            const state = segmentStates.get(segmentId);
+            
+            // Remove if dimmed OR if in dimmed-outline state
+            if (dimmedSegments.has(segmentId) || state === "dimmed-outline") {
+              segment.remove();
             }
           });
 
@@ -740,28 +643,135 @@
           if (background) {
             const width = parseFloat(background.getAttribute("width"));
             const height = parseFloat(background.getAttribute("height"));
-            exportSvg.setAttribute("width", `${width}mm`);
-            exportSvg.setAttribute("height", `${height}mm`);
-            exportSvg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-
+            
+            // Scale up to match Illustrator export (2.834x multiplier)
+            const scale = 2.834645669291339;
+            const scaledWidth = width * scale;
+            const scaledHeight = height * scale;
+            const scaledStrokeWidth = config.lineThickness * scale;
+            const scaledOutlineWidth = 1 * scale;
+            
+            // Create new SVG with Illustrator-style structure
+            const newSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            newSvg.setAttribute("id", "a");
+            newSvg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+            newSvg.setAttribute("viewBox", `0 0 ${scaledWidth.toFixed(2)} ${scaledHeight.toFixed(2)}`);
+            
+            // Create defs with CSS classes
+            const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+            const style = document.createElementNS("http://www.w3.org/2000/svg", "style");
+            const strokeMiterlimit = (scaledStrokeWidth / 2).toFixed(2);
+            style.textContent = `.b{stroke:${config.verticalColor};}.b,.c{stroke-linecap:round;stroke-width:${scaledStrokeWidth.toFixed(2)}px;}.b,.c,.d{fill:none;stroke-miterlimit:${strokeMiterlimit};}.c{stroke:${config.horizontalColor};}.d{stroke:#333;stroke-width:${scaledOutlineWidth.toFixed(2)}px;}.e{fill:#fff;}`;
+            defs.appendChild(style);
+            newSvg.appendChild(defs);
+            
+            // Get children from pattern group
             const children = Array.from(patternGroup.children);
-            patternGroup.remove();
-            children.forEach((child) => exportSvg.appendChild(child));
+            
+            // Process each child
+            children.forEach((child) => {
+              const newChild = child.cloneNode(true);
+              
+              // Scale coordinates and dimensions
+              if (newChild.tagName === 'rect') {
+                // Check if it's the background or outline
+                const fill = newChild.getAttribute('fill');
+                const stroke = newChild.getAttribute('stroke');
+                
+                if (fill === '#ffffff') {
+                  // Background rect
+                  newChild.setAttribute('class', 'e');
+                  newChild.setAttribute('y', '0');
+                  newChild.setAttribute('width', scaledWidth.toFixed(2));
+                  newChild.setAttribute('height', scaledHeight.toFixed(2));
+                  newChild.removeAttribute('fill');
+                } else if (stroke === '#333333' || fill === 'none') {
+                  // Outline rect
+                  newChild.setAttribute('class', 'd');
+                  newChild.setAttribute('y', '0');
+                  newChild.setAttribute('width', scaledWidth.toFixed(2));
+                  newChild.setAttribute('height', scaledHeight.toFixed(2));
+                  const rx = parseFloat(newChild.getAttribute('rx') || 0) * scale;
+                  const ry = parseFloat(newChild.getAttribute('ry') || 0) * scale;
+                  if (rx > 0) newChild.setAttribute('rx', rx.toFixed(2));
+                  if (ry > 0) newChild.setAttribute('ry', ry.toFixed(2));
+                  newChild.removeAttribute('stroke');
+                  newChild.removeAttribute('stroke-width');
+                  newChild.removeAttribute('fill');
+                }
+                newChild.removeAttribute('x');
+              } else if (newChild.tagName === 'line') {
+                // Scale line coordinates
+                const x1 = parseFloat(newChild.getAttribute('x1')) * scale;
+                const y1 = parseFloat(newChild.getAttribute('y1')) * scale;
+                const x2 = parseFloat(newChild.getAttribute('x2')) * scale;
+                const y2 = parseFloat(newChild.getAttribute('y2')) * scale;
+                
+                newChild.setAttribute('x1', x1.toFixed(2));
+                newChild.setAttribute('y1', y1.toFixed(2));
+                newChild.setAttribute('x2', x2.toFixed(2));
+                newChild.setAttribute('y2', y2.toFixed(2));
+                
+                // Determine if horizontal or vertical by color
+                const stroke = newChild.getAttribute('stroke');
+                if (stroke === config.horizontalColor) {
+                  newChild.setAttribute('class', 'c');
+                } else if (stroke === config.verticalColor) {
+                  newChild.setAttribute('class', 'b');
+                }
+                
+                // Remove inline styles and data attributes
+                newChild.removeAttribute('stroke');
+                newChild.removeAttribute('stroke-width');
+                newChild.removeAttribute('stroke-linecap');
+                newChild.removeAttribute('data-segment-id');
+                newChild.removeAttribute('data-original-stroke-width');
+                newChild.removeAttribute('data-original-stroke-color');
+                newChild.removeAttribute('data-original-x1');
+                newChild.removeAttribute('data-original-y1');
+                newChild.removeAttribute('data-original-x2');
+                newChild.removeAttribute('data-original-y2');
+                newChild.removeAttribute('data-is-horizontal');
+                newChild.removeAttribute('class');
+                
+                // Re-apply class after cleanup
+                if (stroke === config.horizontalColor) {
+                  newChild.setAttribute('class', 'c');
+                } else if (stroke === config.verticalColor) {
+                  newChild.setAttribute('class', 'b');
+                }
+              } else if (newChild.tagName === 'circle') {
+                // Scale circle
+                const cx = parseFloat(newChild.getAttribute('cx')) * scale;
+                const cy = parseFloat(newChild.getAttribute('cy')) * scale;
+                const r = parseFloat(newChild.getAttribute('r')) * scale;
+                
+                newChild.setAttribute('cx', cx.toFixed(2));
+                newChild.setAttribute('cy', cy.toFixed(2));
+                newChild.setAttribute('r', r.toFixed(2));
+                newChild.setAttribute('stroke-width', scaledOutlineWidth.toFixed(2));
+              }
+              
+              newSvg.appendChild(newChild);
+            });
+            
+            // Serialize with XML declaration
+            const serializer = new XMLSerializer();
+            let svgString = serializer.serializeToString(newSvg);
+            svgString = '<?xml version="1.0" encoding="UTF-8"?>' + svgString;
+            
+            const blob = new Blob([svgString], { type: "image/svg+xml" });
+            const url = URL.createObjectURL(blob);
+
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `grid-pattern-${Date.now()}.svg`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
           }
         }
-
-        const serializer = new XMLSerializer();
-        const svgString = serializer.serializeToString(exportSvg);
-        const blob = new Blob([svgString], { type: "image/svg+xml" });
-        const url = URL.createObjectURL(blob);
-
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `grid-pattern-${Date.now()}.svg`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
       }
 
       function copySVG() {
@@ -774,15 +784,19 @@
         const patternGroup = exportSvg.querySelector("g");
 
         if (patternGroup) {
-          // Keep dimmed segments but ensure opacity is set as SVG attribute
+          // Remove all hit area rectangles (invisible click targets)
+          const hitBoxes = patternGroup.querySelectorAll("rect[data-segment-id]");
+          hitBoxes.forEach((hitBox) => hitBox.remove());
+
+          // Remove dimmed segments and segments with partial/dimmed-outline states
           const segments = patternGroup.querySelectorAll("line[data-segment-id]");
           segments.forEach((segment) => {
             const segmentId = segment.getAttribute("data-segment-id");
-            if (dimmedSegments.has(segmentId)) {
-              // Convert inline style opacity to SVG opacity attribute for export
-              const opacity = segment.style.opacity || config.dimmedOpacity;
-              segment.setAttribute("opacity", opacity);
-              segment.style.opacity = ""; // Clear inline style to avoid duplication
+            const state = segmentStates.get(segmentId);
+            
+            // Remove if dimmed OR if in dimmed-outline state
+            if (dimmedSegments.has(segmentId) || state === "dimmed-outline") {
+              segment.remove();
             }
           });
 
@@ -831,13 +845,8 @@
               });
             }
             if (data.dimmedSegments) {
-              dimmedSegments = new Set(data.dimmedSegments);
+            dimmedSegments = new Set(data.dimmedSegments);
             }
-            if (data.rowOffsetTop !== undefined) rowOffsetTop = data.rowOffsetTop;
-            if (data.rowOffsetBottom !== undefined) rowOffsetBottom = data.rowOffsetBottom;
-            if (data.colOffsetLeft !== undefined) colOffsetLeft = data.colOffsetLeft;
-            if (data.colOffsetRight !== undefined) colOffsetRight = data.colOffsetRight;
-            if (data.selectedRegion) selectedRegion = data.selectedRegion;
             updateAllGUIControls();
           } catch (e) {
             console.error("Failed to load config:", e);

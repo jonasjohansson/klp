@@ -218,19 +218,19 @@ export function registerSvgFileLoader() {
               const vPointRel = new THREE.Vector3(-(currentX - centerX) * 0.001, (currentY - centerY) * 0.001, 0);
               points.push(vPointRel);
               break;
-            case "C": // Cubic bezier (absolute)
-              const startX = currentX;
-              const startY = currentY;
+            case "C": { // Cubic bezier (absolute)
+              const bezStartX = currentX;
+              const bezStartY = currentY;
               currentX = coords[4] || currentX;
               currentY = coords[5] || currentY;
 
               // Create curve points for smooth bezier
               for (let t = 0; t <= 1; t += 0.1) {
-                const x = this.cubicBezier(t, startX, coords[0], coords[2], coords[4]);
-                const y = this.cubicBezier(t, startY, coords[1], coords[3], coords[5]);
+                const x = this.cubicBezier(t, bezStartX, coords[0], coords[2], coords[4]);
+                const y = this.cubicBezier(t, bezStartY, coords[1], coords[3], coords[5]);
 
                 if (isNaN(x) || isNaN(y)) {
-                  console.warn("svg-file-loader: Invalid bezier coordinates:", { x, y, t, startX, startY, coords });
+                  console.warn("svg-file-loader: Invalid bezier coordinates:", { x, y, t, bezStartX, bezStartY, coords });
                   continue;
                 }
 
@@ -238,6 +238,7 @@ export function registerSvgFileLoader() {
                 points.push(curvePoint);
               }
               break;
+            }
             case "c": // Cubic bezier (relative)
               const startXRel = currentX;
               const startYRel = currentY;
@@ -258,16 +259,15 @@ export function registerSvgFileLoader() {
                 points.push(curvePoint);
               }
               break;
-            case "S": // Smooth cubic bezier (absolute)
-              // For simplicity, treat as line to
-              currentX = coords[0] || currentX;
-              currentY = coords[1] || currentY;
+            case "S": // Smooth cubic bezier (absolute) - coords: cp2x, cp2y, endX, endY
+              currentX = coords[2] || currentX;
+              currentY = coords[3] || currentY;
               const sPoint = new THREE.Vector3(-(currentX - centerX) * 0.001, (currentY - centerY) * 0.001, 0);
               points.push(sPoint);
               break;
-            case "s": // Smooth cubic bezier (relative)
-              currentX += coords[0] || 0;
-              currentY += coords[1] || 0;
+            case "s": // Smooth cubic bezier (relative) - coords: cp2x, cp2y, endX, endY
+              currentX += coords[2] || 0;
+              currentY += coords[3] || 0;
               const sPointRel = new THREE.Vector3(-(currentX - centerX) * 0.001, (currentY - centerY) * 0.001, 0);
               points.push(sPointRel);
               break;

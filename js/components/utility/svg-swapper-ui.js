@@ -18,6 +18,7 @@ export function registerSvgSwapperUI() {
 
       this.createUI();
       this.setupEventListeners();
+      this.setupDragAndDrop();
       this.detectAvailableSvgs();
 
       // Initialize color pickers after a delay to allow SVG colors to load
@@ -33,14 +34,15 @@ export function registerSvgSwapperUI() {
         position: fixed;
         top: 20px;
         left: 20px;
-        background: rgba(0, 0, 0, 0.8);
+        background: rgba(0, 0, 0, 0.85);
         color: white;
-        padding: 15px;
-        border-radius: 8px;
+        padding: 10px;
+        border-radius: 6px;
         font-family: Arial, sans-serif;
-        font-size: 14px;
+        font-size: 12px;
         z-index: 1000;
-        min-width: 200px;
+        min-width: 180px;
+        max-width: 220px;
       `;
 
       // Create header with title and toggle button
@@ -49,28 +51,40 @@ export function registerSvgSwapperUI() {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 10px;
-        border-bottom: 1px solid #333;
-        padding-bottom: 5px;
+        margin-bottom: 8px;
+        padding-bottom: 4px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
       `;
 
       const title = document.createElement("div");
       title.textContent = "SVG Swapper";
-      title.style.cssText = `font-weight: bold;`;
+      title.style.cssText = `font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.9;`;
 
       // Create toggle button
       this.toggleButton = document.createElement("button");
       this.toggleButton.textContent = "−";
       this.toggleButton.style.cssText = `
-        background: #333;
+        background: rgba(255, 255, 255, 0.1);
         color: white;
-        border: 1px solid #555;
+        border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 3px;
-        padding: 2px 6px;
+        padding: 1px 5px;
         cursor: pointer;
-        font-size: 12px;
+        font-size: 14px;
+        line-height: 1;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       `;
       this.toggleButton.addEventListener("click", () => this.toggleUI());
+      this.toggleButton.addEventListener("mouseenter", () => {
+        this.toggleButton.style.background = "rgba(255, 255, 255, 0.15)";
+      });
+      this.toggleButton.addEventListener("mouseleave", () => {
+        this.toggleButton.style.background = "rgba(255, 255, 255, 0.1)";
+      });
 
       header.appendChild(title);
       header.appendChild(this.toggleButton);
@@ -78,7 +92,7 @@ export function registerSvgSwapperUI() {
 
       // Create content container (will be hidden/shown)
       this.contentContainer = document.createElement("div");
-      this.contentContainer.style.cssText = `transition: opacity 0.3s ease;`;
+      this.contentContainer.style.cssText = `transition: all 0.2s ease;`;
       this.uiContainer.appendChild(this.contentContainer);
 
       // Create panel controls (will be populated dynamically)
@@ -90,14 +104,32 @@ export function registerSvgSwapperUI() {
     },
 
     toggleUI() {
-      const isVisible = this.contentContainer.style.opacity !== "0";
+      const isVisible = this.contentContainer.style.display !== "none";
       if (isVisible) {
-        this.contentContainer.style.opacity = "0";
-        this.contentContainer.style.pointerEvents = "none";
+        // Hide the content
+        this.contentContainer.style.display = "none";
+        // Also hide the header border when collapsed
+        const header = this.uiContainer.querySelector("div");
+        if (header) {
+          header.style.borderBottom = "none";
+          header.style.marginBottom = "0";
+          header.style.paddingBottom = "0";
+        }
+        // Reduce padding on container
+        this.uiContainer.style.padding = "6px 10px";
         this.toggleButton.textContent = "+";
       } else {
-        this.contentContainer.style.opacity = "1";
-        this.contentContainer.style.pointerEvents = "auto";
+        // Show the content
+        this.contentContainer.style.display = "block";
+        // Restore header border
+        const header = this.uiContainer.querySelector("div");
+        if (header) {
+          header.style.borderBottom = "1px solid rgba(255, 255, 255, 0.2)";
+          header.style.marginBottom = "8px";
+          header.style.paddingBottom = "4px";
+        }
+        // Restore padding on container
+        this.uiContainer.style.padding = "10px";
         this.toggleButton.textContent = "−";
       }
     },
@@ -137,38 +169,43 @@ export function registerSvgSwapperUI() {
     createPanelControl(panelNumber, svgSrc = null) {
       const panelDiv = document.createElement("div");
       panelDiv.style.cssText = `
-        margin-bottom: 15px;
-        padding: 10px;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 6px;
-        border: 1px solid #333;
+        margin-bottom: 10px;
+        padding: 8px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
       `;
 
-      // Panel header
+      // Panel header - more compact layout
       const headerDiv = document.createElement("div");
       headerDiv.style.cssText = `
         display: flex;
         align-items: center;
-        gap: 10px;
-        margin-bottom: 10px;
+        gap: 6px;
+        margin-bottom: 6px;
       `;
 
-      // Panel label
+      // Panel label - smaller
       const label = document.createElement("span");
-      label.textContent = `Panel ${panelNumber}:`;
-      label.style.minWidth = "60px";
-      label.style.fontWeight = "bold";
+      label.textContent = `P${panelNumber}`;
+      label.style.cssText = `
+        min-width: 20px;
+        font-weight: 600;
+        font-size: 10px;
+        opacity: 0.7;
+      `;
 
-      // SVG selector
+      // SVG selector - more compact
       const select = document.createElement("select");
       select.id = `svg-select-${panelNumber}`;
       select.style.cssText = `
         flex: 1;
-        padding: 5px;
-        background: #333;
+        padding: 3px 4px;
+        background: rgba(255, 255, 255, 0.1);
         color: white;
-        border: 1px solid #555;
-        border-radius: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 3px;
+        font-size: 11px;
       `;
 
       // Add options for all available SVGs
@@ -192,24 +229,34 @@ export function registerSvgSwapperUI() {
         const optionElement = document.createElement("option");
         optionElement.value = option.value;
         optionElement.textContent = option.text;
-        if (option.value === panelNumber.toString()) {
+        // Default to svg1 (klp_1.svg) for all panels
+        if (option.value === "1") {
           optionElement.selected = true;
         }
         select.appendChild(optionElement);
       });
 
-      // Apply button
+      // Apply button - smaller
       const applyBtn = document.createElement("button");
-      applyBtn.textContent = "Apply";
+      applyBtn.textContent = "✓";
       applyBtn.style.cssText = `
-        padding: 5px 10px;
-        background: #007acc;
+        padding: 3px 8px;
+        background: rgba(0, 122, 204, 0.8);
         color: white;
         border: none;
-        border-radius: 4px;
+        border-radius: 3px;
         cursor: pointer;
         font-size: 12px;
+        line-height: 1;
       `;
+
+      // Apply button hover effect
+      applyBtn.addEventListener("mouseenter", () => {
+        applyBtn.style.background = "rgba(0, 122, 204, 1)";
+      });
+      applyBtn.addEventListener("mouseleave", () => {
+        applyBtn.style.background = "rgba(0, 122, 204, 0.8)";
+      });
 
       // Apply button click handler
       applyBtn.addEventListener("click", () => {
@@ -220,13 +267,12 @@ export function registerSvgSwapperUI() {
       headerDiv.appendChild(select);
       headerDiv.appendChild(applyBtn);
 
-      // Color pickers section
+      // Color pickers section - more compact
       const colorSection = document.createElement("div");
       colorSection.style.cssText = `
         display: flex;
         align-items: center;
-        gap: 10px;
-        margin-top: 8px;
+        gap: 6px;
       `;
 
       // Primary color picker
@@ -234,24 +280,29 @@ export function registerSvgSwapperUI() {
       primaryColorDiv.style.cssText = `
         display: flex;
         align-items: center;
-        gap: 5px;
+        gap: 4px;
+        flex: 1;
       `;
 
       const primaryLabel = document.createElement("span");
-      primaryLabel.textContent = "Primary:";
-      primaryLabel.style.fontSize = "12px";
-      primaryLabel.style.minWidth = "50px";
+      primaryLabel.textContent = "1";
+      primaryLabel.style.cssText = `
+        font-size: 10px;
+        opacity: 0.6;
+        min-width: 8px;
+      `;
 
       const primaryColorPicker = document.createElement("input");
       primaryColorPicker.type = "color";
       primaryColorPicker.id = `primary-color-${panelNumber}`;
-      primaryColorPicker.value = "#ff9900"; // Default orange
+      primaryColorPicker.value = "#ff8e24"; // Default orange
       primaryColorPicker.style.cssText = `
-        width: 30px;
-        height: 25px;
-        border: none;
-        border-radius: 4px;
+        width: 100%;
+        height: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 3px;
         cursor: pointer;
+        padding: 0;
       `;
 
       // Secondary color picker
@@ -259,24 +310,29 @@ export function registerSvgSwapperUI() {
       secondaryColorDiv.style.cssText = `
         display: flex;
         align-items: center;
-        gap: 5px;
+        gap: 4px;
+        flex: 1;
       `;
 
       const secondaryLabel = document.createElement("span");
-      secondaryLabel.textContent = "Secondary:";
-      secondaryLabel.style.fontSize = "12px";
-      secondaryLabel.style.minWidth = "60px";
+      secondaryLabel.textContent = "2";
+      secondaryLabel.style.cssText = `
+        font-size: 10px;
+        opacity: 0.6;
+        min-width: 8px;
+      `;
 
       const secondaryColorPicker = document.createElement("input");
       secondaryColorPicker.type = "color";
       secondaryColorPicker.id = `secondary-color-${panelNumber}`;
-      secondaryColorPicker.value = "#00bdfc"; // Default blue
+      secondaryColorPicker.value = "#b3b3b3"; // Default grey
       secondaryColorPicker.style.cssText = `
-        width: 30px;
-        height: 25px;
-        border: none;
-        border-radius: 4px;
+        width: 100%;
+        height: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 3px;
         cursor: pointer;
+        padding: 0;
       `;
 
       // Color picker change handlers
@@ -332,6 +388,207 @@ export function registerSvgSwapperUI() {
               this.swapSvg(4, "4");
               break;
           }
+        }
+      });
+    },
+
+    setupDragAndDrop() {
+      // Create drag-and-drop overlay
+      this.dropOverlay = document.createElement("div");
+      this.dropOverlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 100, 200, 0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+        pointer-events: none;
+      `;
+
+      const dropText = document.createElement("div");
+      dropText.textContent = "Drop SVG file to apply to all panels";
+      dropText.style.cssText = `
+        font-size: 32px;
+        color: white;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+      `;
+      this.dropOverlay.appendChild(dropText);
+      document.body.appendChild(this.dropOverlay);
+
+      // Add drag-and-drop info to UI
+      const dragInfo = document.createElement("div");
+      dragInfo.style.cssText = `
+        margin-top: 8px;
+        padding: 6px 8px;
+        background: rgba(0, 100, 200, 0.15);
+        border-radius: 4px;
+        border: 1px solid rgba(0, 150, 255, 0.3);
+        font-size: 10px;
+        text-align: center;
+        opacity: 0.8;
+      `;
+      dragInfo.textContent = "💡 Drag & drop SVG to apply to all";
+      this.contentContainer.appendChild(dragInfo);
+
+      // Prevent default drag behaviors
+      document.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.dropOverlay.style.display = "flex";
+      });
+
+      document.addEventListener("dragleave", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.target === document.body || e.target === this.dropOverlay) {
+          this.dropOverlay.style.display = "none";
+        }
+      });
+
+      document.addEventListener("drop", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.dropOverlay.style.display = "none";
+
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+          const file = files[0];
+          if (file.type === "image/svg+xml" || file.name.endsWith(".svg")) {
+            this.handleSvgUpload(file);
+          } else {
+            alert("Please drop an SVG file");
+          }
+        }
+      });
+    },
+
+    handleSvgUpload(file) {
+      console.log("svg-swapper: Handling SVG upload:", file.name);
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const svgContent = e.target.result;
+
+        // Create a temporary URL for the uploaded SVG
+        const blob = new Blob([svgContent], { type: "image/svg+xml" });
+        const url = URL.createObjectURL(blob);
+
+        // Update svg1 asset to point to the uploaded file
+        const svg1Asset = document.querySelector("#svg1");
+        if (svg1Asset) {
+          // Revoke previous blob URL if it exists
+          const oldSrc = svg1Asset.getAttribute("src");
+          if (oldSrc && oldSrc.startsWith("blob:")) {
+            URL.revokeObjectURL(oldSrc);
+          }
+          
+          console.log("svg-swapper: Setting new src on svg1 asset:", url);
+          svg1Asset.setAttribute("src", url);
+
+          // Clear the cached colors for svg1 (index 0) to force re-extraction
+          const scene = document.querySelector("a-scene");
+          const svgColorLighting = scene.components["svg-color-lighting"];
+          if (svgColorLighting && svgColorLighting.svgColors) {
+            svgColorLighting.svgColors.delete(0);
+            console.log("svg-swapper: Cleared cached colors for svg1");
+          }
+
+          // Clear existing geometry from all panels before applying new SVG
+          for (let panelNumber = 1; panelNumber <= 4; panelNumber++) {
+            this.clearPanelGeometry(panelNumber);
+          }
+
+          // Function to apply the SVG to all panels
+          const applyToAllPanels = () => {
+            console.log("svg-swapper: Applying uploaded SVG to all panels");
+            
+            // Force color extraction for the new SVG
+            if (svgColorLighting) {
+              svgColorLighting.refreshSvgColors(0);
+            }
+            
+            // Apply to all 4 panels after color extraction
+            setTimeout(() => {
+              for (let panelNumber = 1; panelNumber <= 4; panelNumber++) {
+                setTimeout(() => {
+                  this.swapSvg(panelNumber, "1");
+                }, panelNumber * 200);
+              }
+            }, 500);
+          };
+
+          // Check if asset is already loaded or wait for it to load
+          if (svg1Asset.hasLoaded) {
+            console.log("svg-swapper: svg1 asset already loaded");
+            applyToAllPanels();
+          } else {
+            console.log("svg-swapper: Waiting for svg1 asset to load");
+            // Use both 'loaded' event and a timeout as fallback
+            const loadHandler = () => {
+              console.log("svg-swapper: svg1 asset loaded event fired");
+              applyToAllPanels();
+            };
+            svg1Asset.addEventListener('loaded', loadHandler, { once: true });
+            
+            // Fallback timeout in case loaded event doesn't fire
+            setTimeout(() => {
+              svg1Asset.removeEventListener('loaded', loadHandler);
+              console.log("svg-swapper: Timeout fallback - applying to panels anyway");
+              applyToAllPanels();
+            }, 2000);
+          }
+
+          // Update all dropdowns to show svg1
+          for (let i = 1; i <= 4; i++) {
+            const select = document.querySelector(`#svg-select-${i}`);
+            if (select) {
+              select.value = "1";
+            }
+          }
+        }
+      };
+      reader.readAsText(file);
+    },
+
+    clearPanelGeometry(panelNumber) {
+      console.log(`svg-swapper: Clearing geometry for Panel ${panelNumber}`);
+
+      // Find the panel entity
+      const panelEntity = document.querySelector(`#svg-files-group > a-entity:nth-child(${panelNumber})`);
+      if (!panelEntity) {
+        console.error(`Panel ${panelNumber} not found`);
+        return;
+      }
+
+      // Find all SVG file loader entities in this panel
+      const svgLoaders = panelEntity.querySelectorAll("a-entity[svg-file-loader]");
+      
+      svgLoaders.forEach((loader) => {
+        const svgFileLoaderComponent = loader.components["svg-file-loader"];
+        if (svgFileLoaderComponent) {
+          // Remove all mesh objects from the loader entity
+          const meshes = loader.object3D.children.filter(child => child.type === 'Mesh' || child.type === 'Group');
+          meshes.forEach(mesh => {
+            // Dispose of geometries and materials
+            if (mesh.geometry) {
+              mesh.geometry.dispose();
+            }
+            if (mesh.material) {
+              if (Array.isArray(mesh.material)) {
+                mesh.material.forEach(mat => mat.dispose());
+              } else {
+                mesh.material.dispose();
+              }
+            }
+            loader.object3D.remove(mesh);
+          });
+          
+          console.log(`svg-swapper: Cleared ${meshes.length} meshes from loader`);
         }
       });
     },
@@ -444,9 +701,23 @@ export function registerSvgSwapperUI() {
     },
 
     initializeColorPickers() {
-      // Initialize all color pickers with their corresponding SVG colors
+      // Initialize all color pickers based on the SVG each panel actually uses
       for (let panelNumber = 1; panelNumber <= 4; panelNumber++) {
-        this.updateColorPickersFromSvg(panelNumber, panelNumber - 1);
+        let svgIndex = 0;
+        const panelEntity = document.querySelector(`#svg-files-group > a-entity:nth-child(${panelNumber})`);
+        if (panelEntity) {
+          const loader = panelEntity.querySelector("a-entity[svg-file-loader]");
+          if (loader) {
+            const comp = loader.components["svg-file-loader"];
+            if (comp && comp.data.svgFile) {
+              const match = comp.data.svgFile.id && comp.data.svgFile.id.match(/(\d+)/);
+              if (match) {
+                svgIndex = parseInt(match[1]) - 1;
+              }
+            }
+          }
+        }
+        this.updateColorPickersFromSvg(panelNumber, svgIndex);
       }
     },
 

@@ -51,8 +51,9 @@ export function registerSvgColorLighting() {
       styleElements.forEach((style) => {
         const cssText = style.textContent;
 
-        // Extract color definitions from CSS
-        const colorMatches = cssText.match(/\.cls-\d+\s*\{[^}]*stroke:\s*([^;]+);/g);
+        // Extract stroke colors from CSS - handle various class name formats
+        // e.g. .cls-1 { stroke: #color; }, .b { stroke: #color; }, .st0 { stroke: #color; }
+        const colorMatches = cssText.match(/\.[\w-]+\s*\{[^}]*stroke:\s*([^;]+);/g);
 
         if (colorMatches) {
           colorMatches.forEach((match) => {
@@ -66,6 +67,17 @@ export function registerSvgColorLighting() {
           });
         }
       });
+
+      // Also check for inline stroke attributes on elements if no style-based colors found
+      if (colors.length === 0) {
+        const elementsWithStroke = svgDoc.querySelectorAll("[stroke]");
+        elementsWithStroke.forEach((element) => {
+          const stroke = element.getAttribute("stroke");
+          if (stroke && stroke.startsWith("#") && !colors.includes(stroke)) {
+            colors.push(stroke);
+          }
+        });
+      }
 
       // Remove duplicates and return
       return [...new Set(colors)];
